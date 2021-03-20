@@ -1,0 +1,329 @@
+basePath: /
+definitions:
+  models.ChangeUserPassword:
+    properties:
+      email:
+        type: string
+      oldpassword:
+        type: string
+      password:
+        type: string
+    type: object
+  models.ChangeUserPasswordFromToken:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      token:
+        type: string
+    type: object
+  models.HTTPRes:
+    properties:
+      code:
+        type: integer
+      data:
+        type: object
+      message:
+        example: status bad request
+        type: string
+    type: object
+  models.SignUpData:
+    properties:
+      confirmpassword:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: properly backend.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /change/password/auth/:
+    post:
+      consumes:
+      - application/json
+      description: user to change user password via mail
+      parameters:
+      - description: userdetails
+        in: body
+        name: userDetails
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangeUserPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: ChangePasswordAuth changes a user password for an authorized user
+      tags:
+      - accounts
+  /change/password/token/:
+    post:
+      consumes:
+      - application/json
+      description: user to change user password via mail
+      parameters:
+      - description: userdetails
+        in: body
+        name: userDetails
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangeUserPasswordFromToken'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: ChangePasswordFromToken changes user password from token sent along
+      tags:
+      - accounts
+  /generate/pumc/:
+    get:
+      consumes:
+      - application/json
+      description: pumc code generations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: GeneratePUMC generates a unigue code for each user for later user
+      tags:
+      - accounts
+  /profile/:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: returns the user profile
+      tags:
+      - accounts
+  /reset/password/:
+    post:
+      consumes:
+      - application/json
+      description: user to reset link or tokne to user mail
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangeUserPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: ResetPassword send link/token to user depending on the platform
+      tags:
+      - accounts
+  /signin/:
+    post:
+      consumes:
+      - application/json
+      description: login a user
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: userDetails
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignUpData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: SignIn is used to login a user
+      tags:
+      - accounts
+  /signup/:
+    post:
+      consumes:
+      - application/json
+      description: SignUp user with email or name
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: userDetails
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignUpData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      summary: is the endpoint for user signup.
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+  BasicAuth:
+    type: basic
+  OAuth2AccessCode:
+    authorizationUrl: https://example.com/oauth/authorize
+    flow: accessCode
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+    tokenUrl: https://example.com/oauth/token
+    type: oauth2
+  OAuth2Application:
+    authorizationUrl: ""
+    flow: application
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      write: ' Grants write access'
+    tokenUrl: https://example.com/oauth/token
+    type: oauth2
+  OAuth2Implicit:
+    authorizationUrl: https://example.com/oauth/authorize
+    flow: implicit
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      write: ' Grants write access'
+    type: oauth2
+  OAuth2Password:
+    authorizationUrl: ""
+    flow: password
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      read: ' Grants read access'
+      write: ' Grants write access'
+    tokenUrl: https://example.com/oauth/token
+    type: oauth2
+swagger: "2.0"
