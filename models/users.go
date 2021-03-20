@@ -84,12 +84,11 @@ func SaveToken(key, value, platform string) error {
 	db := database.GetMongoDB()
 	client := db.GetClient()
 	defer database.PutDBBack(db)
+	opts := options.Update().SetUpsert(true)
+	filter := bson.D{{"key", key}}
+	update := bson.D{{"$set", bson.M{"key": key, "value": value, "platform": platform}}}
 	collection := client.Database(database.DbName).Collection(phoneNoTempTokenCollectionName)
-	_, err := collection.InsertOne(context.TODO(), bson.M{
-		"key":      key,
-		"value":    value,
-		"platform": platform,
-	})
+	_, err := collection.UpdateOne(context.TODO(), filter, update, opts)
 	return err
 }
 

@@ -43,7 +43,7 @@ func SignUp(c *gin.Context) {
 	}
 
 	if data.Password != data.ConfirmPassword {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Password does not match"), nil)
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Passwords does not match"), nil)
 		return
 	}
 
@@ -59,23 +59,18 @@ func SignUp(c *gin.Context) {
 	user := &models.User{}
 	var userFound interface{}
 	if userEmail {
-		userFound, err = models.FetchUserByCriterion("email", data.Email)
+		userFound, _ = models.FetchUserByCriterion("email", data.Email)
 	} else {
-		userFound, err = models.FetchUserByCriterion("name", data.Name)
+		userFound, _ = models.FetchUserByCriterion("name", data.Name)
 	}
 
-	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, nil)
-		return
-	}
-	if userFound != nil {
+	if userFound == nil {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email  or name taken"), nil)
 		return
 	}
 	user.Email = data.Email
 	user.Name = data.Name
-
-	user.Password = utils.SHA256Hash(user.Password)
+	user.Password = utils.SHA256Hash(data.Password)
 	user.CreatedAt = time.Now().Unix()
 	if err := models.InsertUser(user); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while inserting user"), nil)
@@ -92,7 +87,7 @@ func SignUp(c *gin.Context) {
 	}{
 		Token: token,
 	}
-	models.NewResponse(c, http.StatusCreated, fmt.Errorf("New User Created "), tknData)
+	models.NewResponse(c, http.StatusCreated, fmt.Errorf("New User Created"), tknData)
 }
 
 // ResetPassword godoc
@@ -124,19 +119,16 @@ func ResetPassword(c *gin.Context) {
 		return
 	}
 
-	userFound, err := models.FetchUserByCriterion("email", data.Email)
-	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, nil)
-		return
-	}
+	userFound, _ := models.FetchUserByCriterion("email", data.Email)
 
-	if userFound != nil {
+	if userFound == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
 		return
 	}
 
 	body := ``
 	token := utils.GenerateRandomDigit(6)
+
 	if strings.Trim(platform[0], " ") == "mobile" {
 		body = fmt.Sprintf(`
 			<h1>Reset Password request</h1>
@@ -151,7 +143,7 @@ func ResetPassword(c *gin.Context) {
 		body = fmt.Sprintf(`
 		<h1>Reset Password request</h1>
 		<a href="%s">Password Reset Link</a>
-		`, fmt.Sprintf("%s/reset/password/?token=%s&&platform=web", os.Getenv("HOST"), tokenHash))
+		`, fmt.Sprintf("http://%s/reset/password/?token=%s&&platform=web", os.Getenv("HOST"), tokenHash))
 		if err := models.SaveToken(data.Email, tokenHash, strings.Trim(platform[0], " ")); err != nil {
 			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error generating token"), nil)
 			return
@@ -159,11 +151,11 @@ func ResetPassword(c *gin.Context) {
 	}
 
 	if err := utils.SendMail(data.Email, "Password Reset from Properly", body); err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error sending email"), nil)
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return
 	}
 
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("Reset email sent"), nil)
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Reset email sent"), body)
 	return
 }
 
@@ -195,9 +187,9 @@ func ChangePasswordAuth(c *gin.Context) {
 		return
 	}
 
-	userFetch, err := models.FetchUserByCriterion("id", res["user_id"])
+	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
 
-	if err != nil {
+	if userFetch == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
 		return
 	}
@@ -234,22 +226,13 @@ func ChangePasswordAuth(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param userDetails body models.ChangeUserPasswordFromToken true "userdetails"
-// @Success 200 {object} models.HTTPRes
+// @Success 201 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
 // @Router /change/password/token/ [post]
 // @Security ApiKeyAuth
 func ChangePasswordFromToken(c *gin.Context) {
-
-	query := c.Request.URL.Query()
-	platform, ok := query["platform"]
-
-	if !ok || len(platform) <= 0 {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("No query sent for platform type sent"), nil)
-		return
-	}
-
 	var email string
 	var password string
 
@@ -267,6 +250,7 @@ func ChangePasswordFromToken(c *gin.Context) {
 		return
 	}
 	token, ok := tokenData["value"]
+
 	if !ok || token != data.Token {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid Token"), nil)
 		return
@@ -274,8 +258,8 @@ func ChangePasswordFromToken(c *gin.Context) {
 	email = data.Email
 	password = data.Password
 
-	userFetch, err := models.FetchUserByCriterion("email", email)
-	if err != nil {
+	userFetch, _ := models.FetchUserByCriterion("email", email)
+	if userFetch == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
 		return
 	}
@@ -349,6 +333,10 @@ func SignIn(c *gin.Context) {
 	} else {
 		userFound, _ = models.FetchUserByCriterion("name", data.Name)
 	}
+	if userFound == nil {
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
+		return
+	}
 
 	if userFound.Password != utils.SHA256Hash(data.Password) {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Incorrect password"), nil)
@@ -365,7 +353,7 @@ func SignIn(c *gin.Context) {
 	}{
 		Token: token,
 	}
-	models.NewResponse(c, http.StatusCreated, fmt.Errorf("USer signed in"), tknData)
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("User signed in"), tknData)
 }
 
 // GeneratePUMC godoc
@@ -383,11 +371,11 @@ func SignIn(c *gin.Context) {
 func GeneratePUMC(c *gin.Context) {
 	res, err := utils.DecodeJWT(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent"), nil)
+		models.NewResponse(c, http.StatusBadRequest, err, nil)
 		return
 	}
 	userFetch, err := models.FetchUserByCriterion("id", res["user_id"])
-	if err != nil {
+	if userFetch == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
 		return
 	}
@@ -415,7 +403,7 @@ func GeneratePUMC(c *gin.Context) {
 	}{
 		PUMCCode: userFetch.PUMCCode,
 	}
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("Password changed"), pumcData)
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("PUMC code generated"), pumcData)
 }
 
 // UserProfile godoc
@@ -436,11 +424,7 @@ func UserProfile(c *gin.Context) {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent"), nil)
 		return
 	}
-	userFetch, err := models.FetchUserByCriterion("id", res["user_id"])
-	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, nil)
-		return
-	}
+	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
 
 	if userFetch == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("user not found"), nil)
@@ -453,7 +437,7 @@ func UserProfile(c *gin.Context) {
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return
 	}
-	delete(v, "password")
+	delete(v, "Password")
 
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("User profile"), v)
 }

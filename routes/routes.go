@@ -22,7 +22,6 @@ func Router() *gin.Engine {
 		name := c.Param("filename")
 		rootDir := os.Getenv("ROOTDIR")
 		c.File(fmt.Sprintf("%s/public/media/%s", rootDir, name))
-		//TODO autheticate this url
 	})
 
 	app.POST("/signup/", controllers.SignUp)
