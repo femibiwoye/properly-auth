@@ -14,10 +14,18 @@ const (
 	phoneNoTempTokenCollectionName = "TempToken"
 )
 
+const (
+	Manager  = "manager"
+	Landlord = "landlord"
+	Tenant   = "tenant"
+	Vendor   = "vendor"
+)
+
 //User decribes user on scoodent
 type User struct {
 	Email           string `json:"email"`
-	Name            string `json:"name"`
+	FirstName       string `json:"firstname"`
+	LastName        string `json:"lastname"`
 	ID              string `json:"id"`
 	ProfileImageURL string `json:"profile_image_url"`
 	Dob             string `json:"dob"`
@@ -35,6 +43,9 @@ func InsertUser(user *User) error {
 	defer database.PutDBBack(db)
 	collection := client.Database(database.DbName).Collection(UserCollectionName)
 	result, err := collection.InsertOne(context.TODO(), user)
+	if err != nil {
+		return err
+	}
 	user.ID = result.InsertedID.(primitive.ObjectID).Hex()
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "id", Value: user.ID}}}}
 	err = UpdateUser(user, update)
@@ -65,8 +76,10 @@ func DeleteUser(user *User) error {
 	client := db.GetClient()
 	defer database.PutDBBack(db)
 	collection := client.Database(database.DbName).Collection(UserCollectionName)
-	s, _ := primitive.ObjectIDFromHex(user.ID)
-
+	s, err := primitive.ObjectIDFromHex(user.ID)
+	if err != nil {
+		return err
+	}
 	filter := bson.M{"_id": s}
 
 	opts := options.Delete().SetCollation(&options.Collation{
@@ -75,7 +88,7 @@ func DeleteUser(user *User) error {
 		CaseLevel: false,
 	})
 
-	_, err := collection.DeleteOne(context.TODO(), filter, opts)
+	_, err = collection.DeleteOne(context.TODO(), filter, opts)
 	return err
 }
 

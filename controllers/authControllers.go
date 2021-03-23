@@ -6,6 +6,7 @@ import (
 	"github.com/badoux/checkmail"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"os"
 	"properlyauth/models"
@@ -15,6 +16,17 @@ import (
 
 	"github.com/haibeey/struct2Map"
 )
+
+func getPlatform(c *gin.Context) (string, error) {
+	query := c.Request.URL.Query()
+	platform, ok := query["platform"]
+
+	if !ok || len(platform) <= 0 {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("No query sent for platform type sent"), nil)
+		return "", fmt.Errorf("No query sent for platform type sent")
+	}
+	return strings.Trim(platform[0], " "), nil
+}
 
 // SignUp godoc
 // @Summary is the endpoint for user signup.
@@ -29,9 +41,12 @@ import (
 // @Failure 500 {object} models.HTTPRes
 // @Router /signup/ [post]
 func SignUp(c *gin.Context) {
+	_, err := getPlatform(c)
+	if err != nil {
+		return
+	}
 	data := models.SignUpData{}
-
-	err := c.ShouldBindJSON(&data)
+	err = c.ShouldBindJSON(&data)
 	if err != nil {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Data not sent %s", err), nil)
 		return
@@ -47,29 +62,39 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
-	userEmail := true
-	if err := checkmail.ValidateFormat(data.Email); err != nil {
-		if len(data.Name) <= 0 {
-			models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Not a valid email or name"), nil)
-			return
-		}
-		userEmail = false
-	}
-
 	user := &models.User{}
-	var userFound interface{}
-	if userEmail {
-		userFound, _ = models.FetchUserByCriterion("email", data.Email)
-	} else {
-		userFound, _ = models.FetchUserByCriterion("name", data.Name)
+	switch strings.ToLower(strings.Trim(data.Role, " ")) {
+	case "manager":
+		user.Role = models.Manager
+	case "landlord":
+		user.Role = models.Landlord
+	case "tenant":
+		user.Role = models.Tenant
+	case "vendor":
+		user.Role = models.Vendor
+	default:
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("role parameter should be either manager or landlord or tenant or vendor"), nil)
+		return
+
+	}
+	if err := checkmail.ValidateFormat(data.Email); err != nil {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Not a valid email"), nil)
+		return
 	}
 
-	if userFound == nil {
+	userFound, err := models.FetchUserByCriterion("email", data.Email)
+	if err != nil && err != mongo.ErrNoDocuments {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
+
+	if userFound != nil {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email  or name taken"), nil)
 		return
 	}
 	user.Email = data.Email
-	user.Name = data.Name
+	user.FirstName = data.FirstName
+	user.LastName = data.LastName
 	user.Password = utils.SHA256Hash(data.Password)
 	user.CreatedAt = time.Now().Unix()
 	if err := models.InsertUser(user); err != nil {
@@ -82,12 +107,14 @@ func SignUp(c *gin.Context) {
 		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error creating token"), nil)
 		return
 	}
-	tknData := struct {
-		Token string
-	}{
-		Token: token,
+	v, err := struct2map.Struct2Map(user)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
 	}
-	models.NewResponse(c, http.StatusCreated, fmt.Errorf("New User Created"), tknData)
+	delete(v, "Password")
+	v["token"] = token
+	models.NewResponse(c, http.StatusCreated, fmt.Errorf("New User Created"), v)
 }
 
 // ResetPassword godoc
@@ -96,7 +123,7 @@ func SignUp(c *gin.Context) {
 // @Tags accounts
 // @Accept  json
 // @Produce  json
-// @Param userDetails body  body models.ChangeUserPassword true "useraccountdetails"
+// @Param userDetails body  body models.ResetPassword true "useraccountdetails"
 // @Success 200 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
@@ -104,18 +131,14 @@ func SignUp(c *gin.Context) {
 // @Router /reset/password/ [post]
 // @Security ApiKeyAuth
 func ResetPassword(c *gin.Context) {
-	data := models.ResetPassword{}
-	err := c.ShouldBindJSON(&data)
+	platform, err := getPlatform(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent"), nil)
 		return
 	}
-
-	query := c.Request.URL.Query()
-	platform, ok := query["platform"]
-
-	if !ok || len(platform) <= 0 {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("No query sent for platform type sent"), nil)
+	data := models.ResetPassword{}
+	err = c.ShouldBindJSON(&data)
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent"), nil)
 		return
 	}
 
@@ -129,12 +152,12 @@ func ResetPassword(c *gin.Context) {
 	body := ``
 	token := utils.GenerateRandomDigit(6)
 
-	if strings.Trim(platform[0], " ") == "mobile" {
+	if platform == "mobile" {
 		body = fmt.Sprintf(`
 			<h1>Reset Password request</h1>
 			<p>Your password reset code is %s</p>
 		`, token)
-		if err := models.SaveToken(data.Email, token, strings.Trim(platform[0], " ")); err != nil {
+		if err := models.SaveToken(data.Email, token, platform); err != nil {
 			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error generating token"), nil)
 			return
 		}
@@ -144,7 +167,7 @@ func ResetPassword(c *gin.Context) {
 		<h1>Reset Password request</h1>
 		<a href="%s">Password Reset Link</a>
 		`, fmt.Sprintf("http://%s/reset/password/?token=%s&&platform=web", os.Getenv("HOST"), tokenHash))
-		if err := models.SaveToken(data.Email, tokenHash, strings.Trim(platform[0], " ")); err != nil {
+		if err := models.SaveToken(data.Email, tokenHash, platform); err != nil {
 			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error generating token"), nil)
 			return
 		}
@@ -173,24 +196,28 @@ func ResetPassword(c *gin.Context) {
 // @Router /change/password/auth/ [post]
 // @Security ApiKeyAuth
 func ChangePasswordAuth(c *gin.Context) {
-	res, err := utils.DecodeJWT(c)
-
+	_, err := getPlatform(c)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err})
+		return
+	}
+
+	res, err := utils.DecodeJWT(c)
+	if err != nil {
+		models.NewResponse(c, http.StatusUnauthorized, err, false)
 		return
 	}
 	data := models.ChangeUserPassword{}
 	err = c.ShouldBindJSON(&data)
 
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent"), nil)
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent"), false)
 		return
 	}
 
 	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
 
 	if userFetch == nil {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), false)
 		return
 	}
 
@@ -202,21 +229,21 @@ func ChangePasswordAuth(c *gin.Context) {
 	userFetch.Password = utils.SHA256Hash(data.Password)
 	uB, err := bson.Marshal(userFetch)
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent can't parse data"), nil)
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent can't parse data"), false)
 		return
 	}
 	var update bson.M
 	err = bson.Unmarshal(uB, &update)
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, err, nil)
+		models.NewResponse(c, http.StatusBadRequest, err, false)
 		return
 	}
 	err = models.UpdateUser(userFetch, bson.D{{Key: "$set", Value: update}})
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, err, nil)
+		models.NewResponse(c, http.StatusBadRequest, err, false)
 		return
 	}
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("Password changed"), nil)
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Password changed"), true)
 }
 
 // ChangePasswordFromToken godoc
@@ -233,11 +260,16 @@ func ChangePasswordAuth(c *gin.Context) {
 // @Router /change/password/token/ [post]
 // @Security ApiKeyAuth
 func ChangePasswordFromToken(c *gin.Context) {
+	_, err := getPlatform(c)
+	if err != nil {
+		return
+	}
+
 	var email string
 	var password string
 
 	data := models.ChangeUserPasswordFromToken{}
-	err := c.ShouldBindJSON(&data)
+	err = c.ShouldBindJSON(&data)
 
 	if err != nil {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent"), nil)
@@ -252,7 +284,7 @@ func ChangePasswordFromToken(c *gin.Context) {
 	token, ok := tokenData["value"]
 
 	if !ok || token != data.Token {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid Token"), nil)
+		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid Token"), nil)
 		return
 	}
 	email = data.Email
@@ -292,7 +324,7 @@ func ChangePasswordFromToken(c *gin.Context) {
 // @Tags accounts
 // @Accept  json
 // @Produce  json
-// @Param userDetails body models.SignUpData true "useraccountdetails"
+// @Param userDetails body models.LoginData true "useraccountdetails"
 // @Success 200 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
@@ -300,41 +332,41 @@ func ChangePasswordFromToken(c *gin.Context) {
 // @Router /signin/ [post]
 // @Security ApiKeyAuth
 func SignIn(c *gin.Context) {
-	data := models.LoginData{}
-
-	err := c.ShouldBindJSON(&data)
+	_, err := getPlatform(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Data not sent %s", err), nil)
 		return
 	}
 
-	if len(data.Email) <= 0 && len(data.Name) <= 0 {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("No email/name passed"), nil)
+	data := models.LoginData{}
+	err = c.ShouldBindJSON(&data)
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, err, nil)
+		return
+	}
+
+	if len(data.Email) <= 0 {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid login details"), nil)
 		return
 	}
 
 	if len(data.Password) <= 0 {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("No password passed"), nil)
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid login details"), nil)
+		return
+	}
+	if err := checkmail.ValidateFormat(data.Email); err != nil {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Not a valid email or name"), nil)
 		return
 	}
 
-	userEmail := true
-	if err := checkmail.ValidateFormat(data.Email); err != nil {
-		if len(data.Name) <= 0 {
-			models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Not a valid email or name"), nil)
-			return
-		}
-		userEmail = false
+	userFound, err := models.FetchUserByCriterion("email", data.Email)
+
+	if err != nil && err != mongo.ErrNoDocuments {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
 	}
 
-	userFound := &models.User{}
-	if userEmail {
-		userFound, _ = models.FetchUserByCriterion("email", data.Email)
-	} else {
-		userFound, _ = models.FetchUserByCriterion("name", data.Name)
-	}
 	if userFound == nil {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Invalid login details"), nil)
 		return
 	}
 
@@ -348,12 +380,14 @@ func SignIn(c *gin.Context) {
 		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error creating token"), nil)
 		return
 	}
-	tknData := struct {
-		Token string
-	}{
-		Token: token,
+	v, err := struct2map.Struct2Map(userFound)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
 	}
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("User signed in"), tknData)
+	delete(v, "Password")
+	v["token"] = token
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("User signed in"), v)
 }
 
 // GeneratePUMC godoc
@@ -371,7 +405,7 @@ func SignIn(c *gin.Context) {
 func GeneratePUMC(c *gin.Context) {
 	res, err := utils.DecodeJWT(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, err, nil)
+		models.NewResponse(c, http.StatusUnauthorized, err, nil)
 		return
 	}
 	userFetch, err := models.FetchUserByCriterion("id", res["user_id"])
@@ -419,9 +453,13 @@ func GeneratePUMC(c *gin.Context) {
 // @Router /profile/ [get]
 // @Security ApiKeyAuth
 func UserProfile(c *gin.Context) {
+	_, err := getPlatform(c)
+	if err != nil {
+		return
+	}
 	res, err := utils.DecodeJWT(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent"), nil)
+		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid data sent"), nil)
 		return
 	}
 	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])

@@ -6,13 +6,13 @@ import (
 
 type LoginData struct {
 	Email    string `json:"email"`
-	Name     string `json:"name"`
 	Password string `json:"password"`
 }
 
 type SignUpData struct {
 	Role            string `json:"role"`
-	Name            string `json:"name"`
+	FirstName       string `json:"firstname"`
+	LastName        string `json:"lastname"`
 	Email           string `json:"email"`
 	Password        string `json:"password"`
 	ConfirmPassword string `json:"confirmpassword"`

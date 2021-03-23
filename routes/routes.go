@@ -15,24 +15,26 @@ func Router() *gin.Engine {
 
 	app := gin.Default()
 
-	app.GET("/", func(c *gin.Context) {
+	v1 := app.Group("/v1")
+
+	v1.GET("/", func(c *gin.Context) {
 		c.String(200, "Welcome to properly")
 	})
-	app.GET("/serve/media/:filename", func(c *gin.Context) {
+	v1.GET("/serve/media/:filename", func(c *gin.Context) {
 		name := c.Param("filename")
 		rootDir := os.Getenv("ROOTDIR")
 		c.File(fmt.Sprintf("%s/public/media/%s", rootDir, name))
 	})
 
-	app.POST("/signup/", controllers.SignUp)
-	app.POST("/reset/password/", controllers.ResetPassword)
-	app.POST("/change/password/auth/", controllers.ChangePasswordAuth)
-	app.POST("/change/password/token/", controllers.ChangePasswordFromToken)
-	app.POST("/signin/", controllers.SignIn)
-	app.GET("/generate/pumc/", controllers.GeneratePUMC)
-	app.GET("/profile/", controllers.UserProfile)
+	v1.POST("/signup/", controllers.SignUp)
+	v1.POST("/reset/password/", controllers.ResetPassword)
+	v1.PUT("/user/change-password/", controllers.ChangePasswordAuth)
+	v1.POST("/change/password/token/", controllers.ChangePasswordFromToken)
+	v1.POST("/login/", controllers.SignIn)
+	v1.GET("/generate/pumc/", controllers.GeneratePUMC)
+	v1.GET("/user/", controllers.UserProfile)
 
-	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return app
 }

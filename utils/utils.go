@@ -70,11 +70,6 @@ func DecodeJWTToken(tokenString string) (map[string]string, error) {
 	return res, nil
 }
 
-//HashStringSHA256 returns the SHA256 hash of a string
-func HashStringSHA256(value string) string {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(value)))
-}
-
 //DecodeJWT parse a jwt token . To be used only in a request
 func DecodeJWT(c *gin.Context) (map[string]string, error) {
 	token := BearerTokenHeader{}
