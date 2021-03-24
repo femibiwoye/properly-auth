@@ -27,11 +27,10 @@ func Router() *gin.Engine {
 	})
 
 	v1.POST("/signup/", controllers.SignUp)
-	v1.POST("/reset/password/", controllers.ResetPassword)
+	v1.PUT("/reset/update-password/", controllers.ResetPassword)
 	v1.PUT("/user/change-password/", controllers.ChangePasswordAuth)
-	v1.POST("/change/password/token/", controllers.ChangePasswordFromToken)
+	v1.POST("/reset/validate-token/", controllers.ChangePasswordFromToken)
 	v1.POST("/login/", controllers.SignIn)
-	v1.GET("/generate/pumc/", controllers.GeneratePUMC)
 	v1.GET("/user/", controllers.UserProfile)
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

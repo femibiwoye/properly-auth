@@ -10,7 +10,7 @@ type LoginData struct {
 }
 
 type SignUpData struct {
-	Role            string `json:"role"`
+	Type            string `json:"type"`
 	FirstName       string `json:"firstname"`
 	LastName        string `json:"lastname"`
 	Email           string `json:"email"`

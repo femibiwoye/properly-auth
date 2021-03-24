@@ -3,7 +3,6 @@ package utils
 import (
 	"crypto/rand"
 	"crypto/sha256"
-	"crypto/tls"
 	"fmt"
 	"os"
 	"strings"
@@ -12,6 +11,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	gomail "gopkg.in/mail.v2"
+
+	"github.com/haibeey/struct2Map"
 )
 
 //BearerTokenHeader header token for jwt
@@ -155,11 +156,9 @@ func SendMail(emailRecipent, subject, body string) error {
 	m.SetHeader("From", os.Getenv("EMAIL_SENDER"))
 	m.SetHeader("To", emailRecipent)
 	m.SetHeader("Subject", subject)
-
 	m.SetBody("text/html", body)
 
-	d := gomail.NewDialer("smtp.gmail.com", 587, os.Getenv("EMAIL_SENDER"), os.Getenv("EMAIL_SENDER_PASSWORD"))
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	d := gomail.NewDialer("smtp.gmail.com", 465, os.Getenv("EMAIL_SENDER"), os.Getenv("EMAIL_SENDER_PASSWORD"))
 	if err := d.DialAndSend(m); err != nil {
 		return err
 	}
@@ -171,4 +170,21 @@ func SHA256Hash(data string) string {
 	h := sha256.New()
 	h.Write([]byte(data))
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+//MissingDataResponse returns the required field for fil that are nil
+func MissingDataResponse(dataModel interface{}) (map[string][]string, error) {
+	response := make(map[string][]string)
+	value, err := struct2map.Struct2Map(dataModel)
+	fmt.Println(value, "fdsksdmhjbdshjkdfsbhjkdfbvdfjkhbfdjkbfjkbfkjdfbjkbdfjbdfj", err)
+	if err != nil {
+		return nil, err
+	}
+
+	for i, v := range value {
+		if v == 0 || v == "" || v == nil {
+			response[i] = []string{fmt.Sprintf("%s cannot be blank.", i)}
+		}
+	}
+	return response, nil
 }

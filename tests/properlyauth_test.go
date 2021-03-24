@@ -34,7 +34,6 @@ func TestScoodent(t *testing.T) {
 	defer cleanUpDb()
 	testSignUp(t, http.StatusCreated, "password", "abrahamakerele38@gmail.com")
 	testSignIn(t, http.StatusOK, "password", "abrahamakerele38@gmail.com")
-	testGeneratePumc(t, http.StatusOK)
 	testGetProfile(t, http.StatusOK)
 	testChangePassword(t, http.StatusOK, "abrahamakerele38@gmail.com", "password", "newpassword")
 	testSignIn(t, http.StatusBadRequest, "password", "abrahamakerele38@gmail.com")

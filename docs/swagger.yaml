@@ -28,17 +28,31 @@ definitions:
         example: status bad request
         type: string
     type: object
+  models.LoginData:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.ResetPassword:
+    properties:
+      email:
+        type: string
+    type: object
   models.SignUpData:
     properties:
       confirmpassword:
         type: string
       email:
         type: string
-      name:
+      firstname:
+        type: string
+      lastname:
         type: string
       password:
         type: string
-      role:
+      type:
         type: string
     type: object
 host: localhost:8080
@@ -127,35 +141,6 @@ paths:
       summary: ChangePasswordFromToken changes user password from token sent along
       tags:
       - accounts
-  /generate/pumc/:
-    get:
-      consumes:
-      - application/json
-      description: pumc code generations
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-      security:
-      - ApiKeyAuth: []
-      summary: GeneratePUMC generates a unigue code for each user for later user
-      tags:
-      - accounts
   /profile/:
     get:
       consumes:
@@ -195,7 +180,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/models.ChangeUserPassword'
+          $ref: '#/definitions/models.ResetPassword'
       produces:
       - application/json
       responses:
@@ -231,7 +216,7 @@ paths:
         name: userDetails
         required: true
         schema:
-          $ref: '#/definitions/models.SignUpData'
+          $ref: '#/definitions/models.LoginData'
       produces:
       - application/json
       responses:

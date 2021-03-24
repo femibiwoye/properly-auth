@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"properlyauth/database"
+	"time"
 )
 
 const (
@@ -32,7 +33,7 @@ type User struct {
 	CreatedAt       int64  `json:"created_at"`
 	PhoneNumber     string `json:"phoneNumber"`
 	Password        string `json:"password"`
-	Role            string `json:"role"`
+	Type            string `json:"type"`
 	PUMCCode        string `json:"pumccode"`
 }
 
@@ -98,21 +99,21 @@ func SaveToken(key, value, platform string) error {
 	client := db.GetClient()
 	defer database.PutDBBack(db)
 	opts := options.Update().SetUpsert(true)
-	filter := bson.D{{"key", key}}
-	update := bson.D{{"$set", bson.M{"key": key, "value": value, "platform": platform}}}
+	filter := bson.D{{Key: key}}
+	update := bson.D{{"$set", bson.M{"key": key, "value": value, "platform": platform, "time": time.Now().Unix()}}}
 	collection := client.Database(database.DbName).Collection(phoneNoTempTokenCollectionName)
 	_, err := collection.UpdateOne(context.TODO(), filter, update, opts)
 	return err
 }
 
 //FetchToken retrieve the phone and stored token value
-func FetchToken(email string) (map[string]string, error) {
+func FetchToken(email string) (map[string]interface{}, error) {
 	db := database.GetMongoDB()
 	client := db.GetClient()
 	defer database.PutDBBack(db)
 	collection := client.Database(database.DbName).Collection(phoneNoTempTokenCollectionName)
 	filter := bson.M{"key": email}
-	res := make(map[string]string)
+	res := make(map[string]interface{})
 	err := collection.FindOne(context.TODO(), filter).Decode(res)
 
 	if err != nil {

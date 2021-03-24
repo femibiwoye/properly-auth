@@ -147,52 +147,6 @@ var doc = `{
                 }
             }
         },
-        "/generate/pumc/": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "pumc code generations",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "GeneratePUMC generates a unigue code for each user for later user",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    }
-                }
-            }
-        },
         "/profile/": {
             "get": {
                 "security": [
@@ -263,7 +217,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ChangeUserPassword"
+                            "$ref": "#/definitions/models.ResetPassword"
                         }
                     }
                 ],
@@ -320,7 +274,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SignUpData"
+                            "$ref": "#/definitions/models.LoginData"
                         }
                     }
                 ],
@@ -446,6 +400,25 @@ var doc = `{
                 }
             }
         },
+        "models.LoginData": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ResetPassword": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "models.SignUpData": {
             "type": "object",
             "properties": {
@@ -455,13 +428,16 @@ var doc = `{
                 "email": {
                     "type": "string"
                 },
-                "name": {
+                "firstname": {
+                    "type": "string"
+                },
+                "lastname": {
                     "type": "string"
                 },
                 "password": {
                     "type": "string"
                 },
-                "role": {
+                "type": {
                     "type": "string"
                 }
             }
