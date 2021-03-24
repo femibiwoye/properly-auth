@@ -176,7 +176,6 @@ func SHA256Hash(data string) string {
 func MissingDataResponse(dataModel interface{}) (map[string][]string, error) {
 	response := make(map[string][]string)
 	value, err := struct2map.Struct2Map(dataModel)
-	fmt.Println(value, "fdsksdmhjbdshjkdfsbhjkdfbvdfjkhbfdjkbfjkbfkjdfbjkbdfjbdfj", err)
 	if err != nil {
 		return nil, err
 	}

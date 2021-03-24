@@ -33,14 +33,14 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/change/password/auth/": {
+        "/login/": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "user to change user password via mail",
+                "description": "login a user",
                 "consumes": [
                     "application/json"
                 ],
@@ -50,15 +50,15 @@ var doc = `{
                 "tags": [
                     "accounts"
                 ],
-                "summary": "ChangePasswordAuth changes a user password for an authorized user",
+                "summary": "SignIn is used to login a user",
                 "parameters": [
                     {
-                        "description": "userdetails",
+                        "description": "useraccountdetails",
                         "name": "userDetails",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ChangeUserPassword"
+                            "$ref": "#/definitions/models.LoginData"
                         }
                     }
                 ],
@@ -90,109 +90,7 @@ var doc = `{
                 }
             }
         },
-        "/change/password/token/": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "user to change user password via mail",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "ChangePasswordFromToken changes user password from token sent along",
-                "parameters": [
-                    {
-                        "description": "userdetails",
-                        "name": "userDetails",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ChangeUserPasswordFromToken"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    }
-                }
-            }
-        },
-        "/profile/": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "returns the user profile",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.HTTPRes"
-                        }
-                    }
-                }
-            }
-        },
-        "/reset/password/": {
+        "/reset/update-password/": {
             "post": {
                 "security": [
                     {
@@ -249,14 +147,14 @@ var doc = `{
                 }
             }
         },
-        "/signin/": {
+        "/reset/validate-token/": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "login a user",
+                "description": "user to change user password via mail",
                 "consumes": [
                     "application/json"
                 ],
@@ -266,21 +164,21 @@ var doc = `{
                 "tags": [
                     "accounts"
                 ],
-                "summary": "SignIn is used to login a user",
+                "summary": "ChangePasswordFromToken changes user password from token sent along",
                 "parameters": [
                     {
-                        "description": "useraccountdetails",
+                        "description": "userdetails",
                         "name": "userDetails",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.LoginData"
+                            "$ref": "#/definitions/models.ChangeUserPasswordFromToken"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.HTTPRes"
                         }
@@ -354,15 +252,114 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/user/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "returns the user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/change-password/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "user to change user password via mail",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "ChangePasswordAuth changes a user password for an authorized user",
+                "parameters": [
+                    {
+                        "description": "userdetails",
+                        "name": "userDetails",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ChangeUserPassword"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "models.ChangeUserPassword": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "oldpassword": {
                     "type": "string"
                 },

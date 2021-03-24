@@ -2,8 +2,6 @@ basePath: /
 definitions:
   models.ChangeUserPassword:
     properties:
-      email:
-        type: string
       oldpassword:
         type: string
       password:
@@ -69,143 +67,7 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
-  /change/password/auth/:
-    post:
-      consumes:
-      - application/json
-      description: user to change user password via mail
-      parameters:
-      - description: userdetails
-        in: body
-        name: userDetails
-        required: true
-        schema:
-          $ref: '#/definitions/models.ChangeUserPassword'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-      security:
-      - ApiKeyAuth: []
-      summary: ChangePasswordAuth changes a user password for an authorized user
-      tags:
-      - accounts
-  /change/password/token/:
-    post:
-      consumes:
-      - application/json
-      description: user to change user password via mail
-      parameters:
-      - description: userdetails
-        in: body
-        name: userDetails
-        required: true
-        schema:
-          $ref: '#/definitions/models.ChangeUserPasswordFromToken'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-      security:
-      - ApiKeyAuth: []
-      summary: ChangePasswordFromToken changes user password from token sent along
-      tags:
-      - accounts
-  /profile/:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-      security:
-      - ApiKeyAuth: []
-      summary: returns the user profile
-      tags:
-      - accounts
-  /reset/password/:
-    post:
-      consumes:
-      - application/json
-      description: user to reset link or tokne to user mail
-      parameters:
-      - description: useraccountdetails
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.ResetPassword'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-      security:
-      - ApiKeyAuth: []
-      summary: ResetPassword send link/token to user depending on the platform
-      tags:
-      - accounts
-  /signin/:
+  /login/:
     post:
       consumes:
       - application/json
@@ -241,6 +103,78 @@ paths:
       summary: SignIn is used to login a user
       tags:
       - accounts
+  /reset/update-password/:
+    post:
+      consumes:
+      - application/json
+      description: user to reset link or tokne to user mail
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: ResetPassword send link/token to user depending on the platform
+      tags:
+      - accounts
+  /reset/validate-token/:
+    post:
+      consumes:
+      - application/json
+      description: user to change user password via mail
+      parameters:
+      - description: userdetails
+        in: body
+        name: userDetails
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangeUserPasswordFromToken'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: ChangePasswordFromToken changes user password from token sent along
+      tags:
+      - accounts
   /signup/:
     post:
       consumes:
@@ -273,6 +207,70 @@ paths:
           schema:
             $ref: '#/definitions/models.HTTPRes'
       summary: is the endpoint for user signup.
+  /user/:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: returns the user profile
+      tags:
+      - accounts
+  /user/change-password/:
+    post:
+      consumes:
+      - application/json
+      description: user to change user password via mail
+      parameters:
+      - description: userdetails
+        in: body
+        name: userDetails
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangeUserPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: ChangePasswordAuth changes a user password for an authorized user
+      tags:
+      - accounts
 securityDefinitions:
   ApiKeyAuth:
     in: header

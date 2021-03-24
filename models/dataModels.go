@@ -27,7 +27,6 @@ type TokenAndPhoneData struct {
 }
 
 type ChangeUserPassword struct {
-	Email       string `json:"email"`
 	OldPassword string `json:"oldpassword"`
 	Password    string `json:"password"`
 }

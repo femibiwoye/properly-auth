@@ -91,7 +91,7 @@ func SignUp(c *gin.Context) {
 		return
 	}
 	if userFound != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email  or name taken"), struct{}{})
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email taken"), struct{}{})
 		return
 	}
 
@@ -132,11 +132,11 @@ func SignUp(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /reset/password/ [post]
+// @Router /reset/update-password/ [post]
 // @Security ApiKeyAuth
 func ResetPassword(c *gin.Context) {
 	data := models.ResetPassword{}
-	platform, isError := errorReponses(c, &data, "signup")
+	platform, isError := errorReponses(c, &data, "Reset Password")
 	if isError {
 		return
 	}
@@ -162,12 +162,12 @@ func ResetPassword(c *gin.Context) {
 		}
 	} else {
 		token = utils.GenerateRandomDigit(15)
-		tokenHash := base64.StdEncoding.EncodeToString([]byte(token))
+		token = base64.StdEncoding.EncodeToString([]byte(token))
 		body = fmt.Sprintf(`
 		<h1>Reset Password request</h1>
 		<a href="%s">Password Reset Link</a>
-		`, fmt.Sprintf("http://%s/reset/password/?token=%s&&platform=web", os.Getenv("HOST"), tokenHash))
-		if err := models.SaveToken(data.Email, tokenHash, platform); err != nil {
+		`, fmt.Sprintf("http://%s/reset/password/?token=%s&&platform=web", os.Getenv("HOST"), token))
+		if err := models.SaveToken(data.Email, token, platform); err != nil {
 			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error generating token"), nil)
 			return
 		}
@@ -193,18 +193,18 @@ func ResetPassword(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /change/password/auth/ [post]
+// @Router /user/change-password/ [post]
 // @Security ApiKeyAuth
 func ChangePasswordAuth(c *gin.Context) {
 	data := models.ChangeUserPassword{}
-	_, isError := errorReponses(c, &data, "signup")
+	_, isError := errorReponses(c, &data, "Change password")
 	if isError {
 		return
 	}
 
 	res, err := utils.DecodeJWT(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusUnauthorized, err, false)
+		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid auth token"), false)
 		return
 	}
 
@@ -216,7 +216,7 @@ func ChangePasswordAuth(c *gin.Context) {
 	}
 
 	if userFetch.Password != utils.SHA256Hash(data.OldPassword) {
-		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Password does not match"), nil)
+		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Wrong old password"), nil)
 		return
 	}
 
@@ -251,7 +251,7 @@ func ChangePasswordAuth(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /change/password/token/ [post]
+// @Router /reset/validate-token/ [post]
 // @Security ApiKeyAuth
 func ChangePasswordFromToken(c *gin.Context) {
 	var email string
@@ -262,7 +262,6 @@ func ChangePasswordFromToken(c *gin.Context) {
 	if isError {
 		return
 	}
-	fmt.Println(data, isError)
 
 	tokenData, err := models.FetchToken(data.Email)
 	if err != nil {
@@ -322,7 +321,7 @@ func ChangePasswordFromToken(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /signin/ [post]
+// @Router /login/ [post]
 // @Security ApiKeyAuth
 func SignIn(c *gin.Context) {
 	data := models.LoginData{}
@@ -332,7 +331,7 @@ func SignIn(c *gin.Context) {
 	}
 
 	if err := checkmail.ValidateFormat(data.Email); err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Not a valid email or name"), struct{ Email []string }{Email: []string{"Invalid Email"}})
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Not a valid email"), struct{ Email []string }{Email: []string{"Invalid Email"}})
 		return
 	}
 
@@ -344,12 +343,12 @@ func SignIn(c *gin.Context) {
 	}
 
 	if userFound == nil {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Invalid login details"), nil)
+		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid login details"), nil)
 		return
 	}
 
 	if userFound.Password != utils.SHA256Hash(data.Password) {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Incorrect password"), nil)
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Incorrect  Login details"), nil)
 		return
 	}
 
@@ -378,7 +377,7 @@ func SignIn(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /profile/ [get]
+// @Router /user/ [get]
 // @Security ApiKeyAuth
 func UserProfile(c *gin.Context) {
 	_, err := getPlatform(c)
@@ -387,7 +386,7 @@ func UserProfile(c *gin.Context) {
 	}
 	res, err := utils.DecodeJWT(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid data sent"), nil)
+		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid auth token"), nil)
 		return
 	}
 	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
