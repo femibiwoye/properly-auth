@@ -3,10 +3,6 @@ package controllers
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/badoux/checkmail"
-	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"os"
 	"properlyauth/models"
@@ -14,7 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/haibeey/struct2Map"
+	"github.com/badoux/checkmail"
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	struct2map "github.com/haibeey/struct2Map"
 )
 
 func getPlatform(c *gin.Context) (string, error) {
@@ -91,7 +92,7 @@ func SignUp(c *gin.Context) {
 		return
 	}
 	if userFound != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email taken"), struct{}{})
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email already taken"), struct{}{})
 		return
 	}
 
