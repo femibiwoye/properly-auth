@@ -32,14 +32,14 @@ jobs:
           go run main.go
 
 
-    - name: Executing remote  command
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        script: |
-            cd /var/www/go/test/properly-auth
-            git pull
+      - name: Executing remote  command
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+              cd /var/www/go/test/properly-auth
+              git pull
     
