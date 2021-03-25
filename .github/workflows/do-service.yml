@@ -26,10 +26,10 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       # Install project dependencies, test and build
-      - name: Run go
-        run: |
-          go mod download
-          go run main.go
+      # - name: Run go
+      #   run: |
+      #     go mod download
+      #     go run main.go
 
 
       - name: Executing remote  command
