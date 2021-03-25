@@ -1,0 +1,10 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/go/test/properly-auth
+hooks:
+  ApplicationStart:
+    - location: scripts/start-app.sh
+      timeout: 300
+      runas: root
