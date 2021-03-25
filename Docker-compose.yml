@@ -1,0 +1,21 @@
+version: '3'
+services:
+  app:
+    container_name: properly-auth
+    build: ./
+    ports: 
+      - 8080:8080 # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    restart: on-failure
+    volumes:
+      - ./:/go/src/properlyauth:rw
+    environment:
+      PORT: "8080"
+    networks:
+      - fullstack
+
+volumes:
+  api:
+
+# Networks to be created to facilitate communication between containers
+networks:
+  fullstack:
