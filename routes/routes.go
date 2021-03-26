@@ -33,6 +33,9 @@ func Router() *gin.Engine {
 	v1.POST("/login/", controllers.SignIn)
 	v1.GET("/user/", controllers.UserProfile)
 
+	v1.PUT("/user/update/", controllers.UpdateProfile)
+	v1.PUT("/user/update-profile-image/", controllers.UpdateProfileImage)
+
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return app

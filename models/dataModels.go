@@ -52,6 +52,13 @@ type CompleteSignUp struct {
 	Region   string
 }
 
+type UpdateUserModel struct {
+	FirstName   string
+	LastName    string
+	Dob         string
+	PhoneNumber string
+}
+
 // NewResponse example
 func NewResponse(ctx *gin.Context, status int, err error, data interface{}) {
 	er := HTTPRes{

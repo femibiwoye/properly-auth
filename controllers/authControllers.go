@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"properlyauth/models"
 	"properlyauth/utils"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	struct2map "github.com/haibeey/struct2Map"
+	"github.com/mitchellh/mapstructure"
 )
 
 func getPlatform(c *gin.Context) (string, error) {
@@ -42,6 +44,24 @@ func errorReponses(c *gin.Context, data interface{}, api string) (string, bool) 
 		return platform, true
 	}
 	return platform, false
+}
+
+func updateUser(user *models.User) error {
+	uB, err := bson.Marshal(user)
+	if err != nil {
+		return err
+	}
+	var update bson.M
+	err = bson.Unmarshal(uB, &update)
+	if err != nil {
+		return err
+	}
+	err = models.UpdateUser(user, bson.D{{Key: "$set", Value: update}})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // SignUp godoc
@@ -205,7 +225,7 @@ func ChangePasswordAuth(c *gin.Context) {
 
 	res, err := utils.DecodeJWT(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid auth token"), false)
+		models.NewResponse(c, http.StatusUnauthorized, err, false)
 		return
 	}
 
@@ -222,18 +242,8 @@ func ChangePasswordAuth(c *gin.Context) {
 	}
 
 	userFetch.Password = utils.SHA256Hash(data.Password)
-	uB, err := bson.Marshal(userFetch)
-	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, false)
-		return
-	}
-	var update bson.M
-	err = bson.Unmarshal(uB, &update)
-	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, false)
-		return
-	}
-	err = models.UpdateUser(userFetch, bson.D{{Key: "$set", Value: update}})
+
+	err = updateUser(userFetch)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
@@ -290,20 +300,9 @@ func ChangePasswordFromToken(c *gin.Context) {
 	}
 
 	userFetch.Password = utils.SHA256Hash(password)
-	uB, err := bson.Marshal(userFetch)
+	err = updateUser(userFetch)
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid data sent can't parse data"), nil)
-		return
-	}
-	var update bson.M
-	err = bson.Unmarshal(uB, &update)
-	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, err, nil)
-		return
-	}
-	err = models.UpdateUser(userFetch, bson.D{{Key: "$set", Value: update}})
-	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, err, nil)
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
 	}
 	models.TakeOutToken(data.Email)
@@ -387,7 +386,7 @@ func UserProfile(c *gin.Context) {
 	}
 	res, err := utils.DecodeJWT(c)
 	if err != nil {
-		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid auth token"), nil)
+		models.NewResponse(c, http.StatusUnauthorized, err, nil)
 		return
 	}
 	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
@@ -406,4 +405,134 @@ func UserProfile(c *gin.Context) {
 	delete(v, "Password")
 
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("User profile"), v)
+}
+
+// UpdateProfile godoc
+// @Summary endpoint to update user profile
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /user/update/ [put]
+// @Security ApiKeyAuth
+func UpdateProfile(c *gin.Context) {
+	_, err := getPlatform(c)
+	if err != nil {
+		return
+	}
+	res, err := utils.DecodeJWT(c)
+	if err != nil {
+		models.NewResponse(c, http.StatusUnauthorized, err, nil)
+		return
+	}
+	data := models.UpdateUserModel{}
+	c.ShouldBindJSON(&data)
+	errorResponse, err := utils.MissingDataResponse(data)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
+
+	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
+
+	if userFetch == nil {
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("user not found"), nil)
+		return
+	}
+
+	v, err := struct2map.Struct2Map(&data)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
+
+	mapToUpdate := make(map[string]interface{})
+	response := make(map[string]interface{})
+	for key, value := range v {
+		_, ok := errorResponse[key]
+		if !ok {
+			mapToUpdate[key] = value
+			response[key] = []string{fmt.Sprintf("%s has been updated to %s", key, value)}
+		}
+	}
+
+	mapstructure.Decode(mapToUpdate, userFetch)
+	err = updateUser(userFetch)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+
+	if len(response) <= 0 {
+		models.NewResponse(c, http.StatusOK, fmt.Errorf("Nothing was updated"), response)
+	} else {
+		models.NewResponse(c, http.StatusOK, fmt.Errorf("User profile update"), response)
+	}
+
+}
+
+// UpdateProfileImage godoc
+// @Summary endpoint to update user profile
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /user/update-profile-image/ [put]
+// @Security ApiKeyAuth
+func UpdateProfileImage(c *gin.Context) {
+	_, err := getPlatform(c)
+	if err != nil {
+		return
+	}
+	res, err := utils.DecodeJWT(c)
+	if err != nil {
+		models.NewResponse(c, http.StatusUnauthorized, err, nil)
+		return
+	}
+	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
+
+	if userFetch == nil {
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("user not found"), nil)
+		return
+	}
+
+	file, fileHeader, err := c.Request.FormFile("image")
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, err, struct{ Image []string }{Image: []string{"image file error"}})
+		return
+	}
+	buff := make([]byte, 512)
+	_, err = file.Read(buff)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
+	rootDir := os.Getenv("ROOTDIR")
+	filename := fmt.Sprintf("%d%s", time.Now().UnixNano(), filepath.Base(fileHeader.Filename))
+	filetype := http.DetectContentType(buff)
+	if filetype != "image/jpeg" && filetype != "image/png" {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("The provided file format is not allowed. Please upload a JPEG or PNG image"), struct{}{})
+		return
+	}
+	err = c.SaveUploadedFile(fileHeader, fmt.Sprintf("%s/public/media/%s", rootDir, filename))
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+	userFetch.ProfileImageURL = filename
+
+	err = updateUser(userFetch)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Profile image updated"), true)
 }
