@@ -92,7 +92,7 @@ func SignUp(c *gin.Context) {
 		return
 	}
 	if userFound != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email already taken"), struct{}{})
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email taken"), struct{}{})
 		return
 	}
 
