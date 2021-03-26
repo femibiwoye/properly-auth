@@ -59,6 +59,9 @@ type UpdateUserModel struct {
 	PhoneNumber string
 }
 
+type ProfileImage struct{
+	Image []byte
+}
 // NewResponse example
 func NewResponse(ctx *gin.Context, status int, err error, data interface{}) {
 	er := HTTPRes{

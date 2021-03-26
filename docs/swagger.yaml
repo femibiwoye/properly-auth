@@ -33,6 +33,13 @@ definitions:
       password:
         type: string
     type: object
+  models.ProfileImage:
+    properties:
+      image:
+        items:
+          type: integer
+        type: array
+    type: object
   models.ResetPassword:
     properties:
       email:
@@ -51,6 +58,17 @@ definitions:
       password:
         type: string
       type:
+        type: string
+    type: object
+  models.UpdateUserModel:
+    properties:
+      dob:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      phoneNumber:
         type: string
     type: object
 host: localhost:8080
@@ -269,6 +287,76 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: ChangePasswordAuth changes a user password for an authorized user
+      tags:
+      - accounts
+  /user/update-profile-image/:
+    put:
+      consumes:
+      - multipart/form-data;
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: userDetails
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProfileImage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to update user profile
+      tags:
+      - accounts
+  /user/update/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: userDetails
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to update user profile
       tags:
       - accounts
 securityDefinitions:

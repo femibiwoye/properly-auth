@@ -1,11 +1,14 @@
 package test
 
 import (
-	"fmt"
+	"context"
 	"github.com/joho/godotenv"
+	"log"
 	"net/http"
+	"fmt"
 	"os"
 	"os/signal"
+	"properlyauth/database"
 	"strings"
 	"syscall"
 	"testing"
@@ -62,10 +65,10 @@ func TestScoodent(t *testing.T) {
 	testResetPassword(t, http.StatusOK, "abrahamakerele38@gmail.com", "mobile")
 	testChangePasswordByToken(t, http.StatusOK, "abrahamakerele38@gmail.com", "newpassword", "111111")
 	testChangeUserProfile(t, http.StatusOK)
-	testUploadPost(t, http.StatusOK)
+	testUploadPost(t,http.StatusOK)
 }
 
 func cleanUpDb() {
-	// client := database.GetMongoDB().GetClient()
-	// log.Print(client.Database(database.DbName).Drop(context.TODO()))
+	client := database.GetMongoDB().GetClient()
+	log.Print(client.Database(database.DbName).Drop(context.TODO()))
 }

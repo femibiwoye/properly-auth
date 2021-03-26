@@ -412,6 +412,7 @@ func UserProfile(c *gin.Context) {
 // @Description
 // @Tags accounts
 // @Accept  json
+// @Param  userDetails body models.UpdateUserModel true "useraccountdetails"
 // @Produce  json
 // @Success 200 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes
@@ -479,8 +480,9 @@ func UpdateProfile(c *gin.Context) {
 // @Summary endpoint to update user profile
 // @Description
 // @Tags accounts
-// @Accept  json
+// @Accept  multipart/form-data;
 // @Produce  json
+// @Param  userDetails body models.ProfileImage true "useraccountdetails"
 // @Success 200 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
