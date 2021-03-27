@@ -57,11 +57,13 @@ type UpdateUserModel struct {
 	LastName    string
 	Dob         string
 	PhoneNumber string
+	Address     string
 }
 
-type ProfileImage struct{
+type ProfileImage struct {
 	Image []byte
 }
+
 // NewResponse example
 func NewResponse(ctx *gin.Context, status int, err error, data interface{}) {
 	er := HTTPRes{

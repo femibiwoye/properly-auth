@@ -12,12 +12,12 @@ import (
 	"testing"
 )
 
-func testSignUp(t *testing.T, ExpectedCode int, password, email string) string {
+func testSignUp(t *testing.T, ExpectedCode int, password, email, typed string) string {
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("POST", "/v1/signup/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	data := make(map[string]interface{})
-	data["type"] = "landlord"
+	data["type"] = typed
 	data["password"] = password
 	data["confirmpassword"] = password
 	data["email"] = email
@@ -189,8 +189,6 @@ func testChangeUserProfile(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
-
-	fmt.Printf("%s %s", responseText, w.Result().Status)
 }
 
 func testUploadPost(t *testing.T, ExpectedCode int) {
@@ -240,5 +238,4 @@ func testUploadPost(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
-	fmt.Printf("%s %s", responseText, w.Result().Status)
 }

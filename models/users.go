@@ -22,7 +22,7 @@ const (
 	Vendor   = "vendor"
 )
 
-//User decribes user on scoodent
+//User decribes user on properly
 type User struct {
 	Email           string `json:"email"`
 	FirstName       string `json:"firstname"`

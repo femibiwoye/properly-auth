@@ -36,6 +36,14 @@ func Router() *gin.Engine {
 	v1.PUT("/user/update/", controllers.UpdateProfile)
 	v1.PUT("/user/update-profile-image/", controllers.UpdateProfileImage)
 
+	v1.PUT("/create/property/", controllers.CreateProperty)
+	v1.PUT("/update/property/", controllers.UpdatePropertyRoute)
+
+	v1.PUT("/property/add-landlord/", controllers.AddLandlordToProperty)
+	v1.PUT("/property/remove-landlord/", controllers.RemoveLandlordFromProperty)
+	v1.PUT("/property/add-tenant/", controllers.AddTenantToProperty)
+	v1.PUT("/property/remove-tenant/", controllers.RemoveTenantFromProperty)
+
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return app

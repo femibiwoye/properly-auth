@@ -2,16 +2,18 @@ package test
 
 import (
 	"context"
-	"github.com/joho/godotenv"
+	"fmt"
 	"log"
 	"net/http"
-	"fmt"
 	"os"
 	"os/signal"
 	"properlyauth/database"
+	"properlyauth/models"
 	"strings"
 	"syscall"
 	"testing"
+
+	"github.com/joho/godotenv"
 )
 
 func handleInterupt() {
@@ -24,11 +26,8 @@ func handleInterupt() {
 	}()
 }
 
-func initVar(t *testing.T) {
-
-}
 func TestScoodent(t *testing.T) {
-	initVar(t)
+
 	os.Setenv("HOST", "127.0.0.1:8080")
 	os.Setenv("TESTING", "TESTING")
 	err := godotenv.Load("../.env")
@@ -41,7 +40,6 @@ func TestScoodent(t *testing.T) {
 	}
 
 	dir = strings.TrimSuffix(dir, "tests")
-	fmt.Println(dir, "ilnhdfkbhifdhbjkdfghdf")
 	os.Setenv("ROOTDIR", dir)
 	_, err = os.Stat(fmt.Sprintf("%spublic/media", dir))
 	if err != nil {
@@ -50,11 +48,13 @@ func TestScoodent(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	fmt.Println(err, "ilnhdfkbhifdhbjkdfghdf na ment")
 	handleInterupt()
 	router.Static("/public", "public")
 	defer cleanUpDb()
-	testSignUp(t, http.StatusCreated, "password", "abrahamakerele38@gmail.com")
+	testSignUp(t, http.StatusCreated, "password", "abrahamakerele38@gmail.com", models.Manager)
+	testSignUp(t, http.StatusCreated, "password", "abraham38@gmail.com", models.Landlord)
+	testSignUp(t, http.StatusCreated, "password", "abrahamak38@gmail.com", models.Tenant)
+	testSignUp(t, http.StatusCreated, "password", "niyi@gmail.com", models.Vendor)
 	testSignIn(t, http.StatusOK, "password", "abrahamakerele38@gmail.com")
 	testGetProfile(t, http.StatusOK)
 	testChangePassword(t, http.StatusOK, "abrahamakerele38@gmail.com", "password", "newpassword")
@@ -65,10 +65,19 @@ func TestScoodent(t *testing.T) {
 	testResetPassword(t, http.StatusOK, "abrahamakerele38@gmail.com", "mobile")
 	testChangePasswordByToken(t, http.StatusOK, "abrahamakerele38@gmail.com", "newpassword", "111111")
 	testChangeUserProfile(t, http.StatusOK)
-	testUploadPost(t,http.StatusOK)
+	testUploadPost(t, http.StatusOK)
+	testCreateProperty(t, http.StatusCreated)
+	testUpdateProperty(t, http.StatusOK)
+	testAddLandlord(t, http.StatusOK)
+	testRemoveLandlord(t, http.StatusOK)
+	testAddTenant(t, http.StatusOK)
+	testRemoveTenant(t, http.StatusOK)
 }
 
 func cleanUpDb() {
-	client := database.GetMongoDB().GetClient()
-	log.Print(client.Database(database.DbName).Drop(context.TODO()))
+	if os.Getenv("CLEAR") == "CLEAR" {
+		client := database.GetMongoDB().GetClient()
+		log.Print(client.Database(database.DbName).Drop(context.TODO()))
+		log.Println(os.RemoveAll(fmt.Sprintf("%spublic/media/", os.Getenv("ROOTDIR"))))
+	}
 }
