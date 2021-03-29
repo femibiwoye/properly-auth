@@ -97,6 +97,9 @@ func validateProperty(c *gin.Context, typed, operation string) (*models.Property
 		return nil, nil, false
 	}
 
+	if operation == "List" {
+		delete(errorResponse, "UserID")
+	}
 	if len(errorResponse) > 0 {
 		_, ok := errorResponse["UserID"]
 		if !ok && operation != "List" {
@@ -107,14 +110,19 @@ func validateProperty(c *gin.Context, typed, operation string) (*models.Property
 
 	property, _ := models.FetchPropertyByCriterion("id", data.PropertyID)
 	if property == nil {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Property not found"), data)
+		_, ok := errorResponse["PropertyID"]
+		if !ok {
+			errorResponse["propertyid"] = []string{"Property id doesn't match  any property"}
+		}
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Property not found"), errorResponse)
 		return nil, nil, false
 	}
 
 	userFetch, _ := models.FetchUserByCriterion("id", data.UserID)
 
 	if userFetch == nil && operation != "List" {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("The User to %s not found", operation), struct{}{})
+		errorResponse["userid"] = []string{"User id doesn't return match  any user"}
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("The User to %s not found", operation), errorResponse)
 		return nil, nil, false
 	}
 
@@ -131,18 +139,29 @@ func augmentProperty(c *gin.Context, typed, operation string, f func(map[string]
 	if !ok {
 		return
 	}
+	field := "id"
+	values := []string{}
 	switch typed {
 	case models.Landlord:
 		f(property.Landlords, userFetch.ID)
+		values = mapKeysToArray(property.Landlords)
 	case models.Tenant:
 		f(property.Tenants, userFetch.ID)
+		values = mapKeysToArray(property.Tenants)
 	case models.Vendor:
 		f(property.Vendors, userFetch.ID)
+		values = mapKeysToArray(property.Vendors)
+	}
+
+	users, err := models.FetchUserByCriterionMultiple(field, values)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
 	}
 
 	updateProperty(property)
 
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("New %s added to this property", typed), struct{}{})
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("New %s added to this property", typed), users)
 
 }
 
@@ -173,7 +192,7 @@ func fetchList(c *gin.Context, typed string) {
 
 	users, err := models.FetchUserByCriterionMultiple(field, values)
 	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
 
