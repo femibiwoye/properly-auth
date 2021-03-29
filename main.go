@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
+	"fmt"
 	"log"
 	"os"
 	"properlyauth/routes"
+
+	"github.com/joho/godotenv"
 
 	"properlyauth/docs"
 )
@@ -65,6 +67,13 @@ func main() {
 		log.Fatalf("Can't get current working directory due to error :%v", err)
 	}
 	os.Setenv("ROOTDIR", dir)
+	if _, err := os.Stat(fmt.Sprintf("%s/public/media", dir)); err != nil {
+		err := os.Mkdir(fmt.Sprintf("%s/public/media", dir), 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	router := routes.Router()
 
 	docs.SwaggerInfo.Title = "Properly Swagger Docs"

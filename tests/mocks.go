@@ -5,8 +5,9 @@ import (
 )
 
 var (
-	router = routes.Router()
-	tokens = []string{}
+	router     = routes.Router()
+	tokens     = []string{}
+	propertyID = []string{}
 )
 
 type mockReadCloser struct {
