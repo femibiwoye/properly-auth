@@ -155,3 +155,24 @@ func FetchUserByCriterion(criteria, value string) (*User, error) {
 	}
 	return user, nil
 }
+
+//FetchUserByCriterionMultiple returns a users struct that tha matches the particular criteria
+// i.e FetchUserByCriterion("username","abraham") returns a user struct where username is abraham and more
+func FetchUserByCriterionMultiple(criteria string, values []string) ([]*User, error) {
+	db := database.GetMongoDB()
+	client := db.GetClient()
+	defer database.PutDBBack(db)
+	collection := client.Database(database.DbName).Collection(UserCollectionName)
+	filter := bson.M{criteria: bson.M{"$in": values}}
+	users := []*User{}
+
+	opts := options.Find().SetSort(bson.D{{"CreatedAt", 1}}).SetProjection(bson.M{"password": 0})
+	cursor, err := collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		return nil, err
+	}
+	return users, nil
+}

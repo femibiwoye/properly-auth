@@ -69,8 +69,10 @@ func TestScoodent(t *testing.T) {
 	testCreateProperty(t, http.StatusCreated)
 	testUpdateProperty(t, http.StatusOK)
 	testAddLandlord(t, http.StatusOK)
+	testListLandLord(t, http.StatusOK)
 	testRemoveLandlord(t, http.StatusOK)
 	testAddTenant(t, http.StatusOK)
+	testListTenant(t, http.StatusOK)
 	testRemoveTenant(t, http.StatusOK)
 }
 

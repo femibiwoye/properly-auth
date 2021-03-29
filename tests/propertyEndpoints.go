@@ -23,7 +23,7 @@ func getIdFromToken(t *testing.T, token string) string {
 
 func testUpdateProperty(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/update/property/?platform=mobile", nil)
+	req, err := http.NewRequest("PUT", "/v1/manager/update/property/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
@@ -97,7 +97,7 @@ func testCreateProperty(t *testing.T, ExpectedCode int) {
 	}
 
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/create/property/?platform=mobile", body)
+	req, err := http.NewRequest("PUT", "/v1/manager/create/property/?platform=mobile", body)
 
 	if err != nil {
 		t.Fatalf("%v occured", err)
@@ -125,7 +125,7 @@ func testCreateProperty(t *testing.T, ExpectedCode int) {
 
 func testAddLandlord(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/property/add-landlord/?platform=mobile", nil)
+	req, err := http.NewRequest("PUT", "/v1/landlord/property/add/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
@@ -149,7 +149,7 @@ func testAddLandlord(t *testing.T, ExpectedCode int) {
 
 func testRemoveLandlord(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/property/remove-landlord/?platform=mobile", nil)
+	req, err := http.NewRequest("PUT", "/v1/landlord/property/remove/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
@@ -173,7 +173,7 @@ func testRemoveLandlord(t *testing.T, ExpectedCode int) {
 
 func testAddTenant(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/property/add-tenant/?platform=mobile", nil)
+	req, err := http.NewRequest("PUT", "/v1/tenant/property/add/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
@@ -197,7 +197,7 @@ func testAddTenant(t *testing.T, ExpectedCode int) {
 
 func testRemoveTenant(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/property/remove-tenant/?platform=mobile", nil)
+	req, err := http.NewRequest("PUT", "/v1/tenant/property/remove/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
@@ -217,4 +217,53 @@ func testRemoveTenant(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
+}
+
+func testListLandLord(t *testing.T, ExpectedCode int) {
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/v1/landlord/property/list/?platform=mobile", nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
+
+	data := make(map[string]interface{})
+	data["propertyid"] = propertyID[0]
+
+	dataByte, _ := json.Marshal(data)
+	mrc := mockReadCloser{data: dataByte}
+	req.Body = mrc
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	router.ServeHTTP(w, req)
+	responseText, err := ioutil.ReadAll(w.Body)
+	if w.Code != ExpectedCode {
+		fmt.Printf("%s %s", responseText, w.Result().Status)
+		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
+	}
+	fmt.Printf("%s %s", responseText, w.Result().Status)
+}
+
+func testListTenant(t *testing.T, ExpectedCode int) {
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/v1/tenant/property/list/?platform=mobile", nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
+
+	data := make(map[string]interface{})
+	data["propertyid"] = propertyID[0]
+
+	dataByte, _ := json.Marshal(data)
+	mrc := mockReadCloser{data: dataByte}
+	req.Body = mrc
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	router.ServeHTTP(w, req)
+	responseText, err := ioutil.ReadAll(w.Body)
+	if w.Code != ExpectedCode {
+		fmt.Printf("%s %s", responseText, w.Result().Status)
+		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
+	}
+
+	fmt.Printf("%s %s", responseText, w.Result().Status)
 }

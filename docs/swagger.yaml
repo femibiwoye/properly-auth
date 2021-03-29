@@ -42,6 +42,11 @@ definitions:
         example: status bad request
         type: string
     type: object
+  models.ListType:
+    properties:
+      propertyID:
+        type: string
+    type: object
   models.LoginData:
     properties:
       email:
@@ -103,7 +108,7 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
-  /create/property/:
+  /landlord/property/add/:
     put:
       consumes:
       - application/json
@@ -113,7 +118,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.CreateProperty'
+          $ref: '#/definitions/models.AddLandlord'
       produces:
       - application/json
       responses:
@@ -135,8 +140,79 @@ paths:
             $ref: '#/definitions/models.HTTPRes'
       security:
       - ApiKeyAuth: []
-      summary: endpoint to Create a property. Only manager are capable of creating
-        property
+      summary: endpoint to add a landloard to a property. Only manager are capable
+        of adding landlord property
+      tags:
+      - accounts
+  /landlord/property/list/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.ListType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: return the landlords added to a property
+      tags:
+      - accounts
+  /landlord/property/remove/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddLandlord'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to remove a landloard from a property. Only manager are capable
+        of adding landlord property
       tags:
       - accounts
   /login/:
@@ -175,7 +251,7 @@ paths:
       summary: SignIn is used to login a user
       tags:
       - accounts
-  /property/add-landlord/:
+  /manager/create/property/:
     put:
       consumes:
       - application/json
@@ -185,7 +261,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.CreateProperty'
       produces:
       - application/json
       responses:
@@ -207,11 +283,11 @@ paths:
             $ref: '#/definitions/models.HTTPRes'
       security:
       - ApiKeyAuth: []
-      summary: endpoint to add a landloard to a property. Only manager are capable
-        of adding landlord property
+      summary: endpoint to Create a property. Only manager are capable of creating
+        property
       tags:
       - accounts
-  /property/add-tenant/:
+  /manager/update/property/:
     put:
       consumes:
       - application/json
@@ -221,7 +297,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.CreateProperty'
       produces:
       - application/json
       responses:
@@ -243,80 +319,8 @@ paths:
             $ref: '#/definitions/models.HTTPRes'
       security:
       - ApiKeyAuth: []
-      summary: endpoint to add a tenant to a property. Only manager are capable of
-        adding landlord property
-      tags:
-      - accounts
-  /property/remove-landlord/:
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: useraccountdetails
-        in: body
-        name: details
-        required: true
-        schema:
-          $ref: '#/definitions/models.AddLandlord'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-      security:
-      - ApiKeyAuth: []
-      summary: endpoint to remove a landloard from a property. Only manager are capable
-        of adding landlord property
-      tags:
-      - accounts
-  /property/remove-tenant/:
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: useraccountdetails
-        in: body
-        name: details
-        required: true
-        schema:
-          $ref: '#/definitions/models.AddLandlord'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.HTTPRes'
-      security:
-      - ApiKeyAuth: []
-      summary: endpoint to remove a tanent from a property. Only manager are capable
-        of adding landlord property
+      summary: endpoint to edit a property field. Only manager are capable of updating
+        property
       tags:
       - accounts
   /reset/update-password/:
@@ -423,7 +427,7 @@ paths:
           schema:
             $ref: '#/definitions/models.HTTPRes'
       summary: is the endpoint for user signup.
-  /update/property/:
+  /tenant/property/add/:
     put:
       consumes:
       - application/json
@@ -433,7 +437,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.CreateProperty'
+          $ref: '#/definitions/models.AddLandlord'
       produces:
       - application/json
       responses:
@@ -455,8 +459,79 @@ paths:
             $ref: '#/definitions/models.HTTPRes'
       security:
       - ApiKeyAuth: []
-      summary: endpoint to edit a property field. Only manager are capable of updating
-        property
+      summary: endpoint to add a tenant to a property. Only manager are capable of
+        adding landlord property
+      tags:
+      - accounts
+  /tenant/property/list/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.ListType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: list all tenant in a property
+      tags:
+      - accounts
+  /tenant/property/remove/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddLandlord'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to remove a tanent from a property. Only manager are capable
+        of adding landlord property
       tags:
       - accounts
   /user/:
@@ -591,6 +666,78 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: endpoint to update user profile
+      tags:
+      - accounts
+  /vendor/property/add/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddLandlord'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to add a tenant to a property. Only manager are capable of
+        adding landlord property
+      tags:
+      - accounts
+  /vendor/property/remove/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddLandlord'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to remove a tanent from a property. Only manager are capable
+        of adding landlord property
       tags:
       - accounts
 securityDefinitions:

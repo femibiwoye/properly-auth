@@ -36,13 +36,19 @@ func Router() *gin.Engine {
 	v1.PUT("/user/update/", controllers.UpdateProfile)
 	v1.PUT("/user/update-profile-image/", controllers.UpdateProfileImage)
 
-	v1.PUT("/create/property/", controllers.CreateProperty)
-	v1.PUT("/update/property/", controllers.UpdatePropertyRoute)
+	manager := v1.Group("/manager")
+	manager.PUT("/create/property/", controllers.CreateProperty)
+	manager.PUT("/update/property/", controllers.UpdatePropertyRoute)
 
-	v1.PUT("/property/add-landlord/", controllers.AddLandlordToProperty)
-	v1.PUT("/property/remove-landlord/", controllers.RemoveLandlordFromProperty)
-	v1.PUT("/property/add-tenant/", controllers.AddTenantToProperty)
-	v1.PUT("/property/remove-tenant/", controllers.RemoveTenantFromProperty)
+	landlord := v1.Group("/landlord")
+	landlord.PUT("/property/add/", controllers.AddLandlordToProperty)
+	landlord.PUT("/property/remove/", controllers.RemoveLandlordFromProperty)
+	landlord.GET("/property/list/", controllers.ListLandlordFromProperty)
+
+	tenant := v1.Group("/tenant")
+	tenant.PUT("/property/add/", controllers.AddTenantToProperty)
+	tenant.PUT("/property/remove/", controllers.RemoveTenantFromProperty)
+	tenant.GET("/property/list/", controllers.ListTenantFromProperty)
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

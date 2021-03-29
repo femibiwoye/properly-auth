@@ -17,3 +17,7 @@ type AddLandlord struct {
 	UserID     string
 	PropertyID string
 }
+
+type ListType struct {
+	PropertyID string
+}
