@@ -54,7 +54,7 @@ func RemoveTenantFromProperty(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /tenant/property/list/ [put]
+// @Router /tenant/property/list/ [get]
 // @Security ApiKeyAuth
 func ListTenantFromProperty(c *gin.Context) {
 	fetchList(c, models.Tenant)

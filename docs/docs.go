@@ -90,7 +90,7 @@ var doc = `{
             }
         },
         "/landlord/property/list/": {
-            "put": {
+            "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -590,7 +590,7 @@ var doc = `{
             }
         },
         "/tenant/property/list/": {
-            "put": {
+            "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []

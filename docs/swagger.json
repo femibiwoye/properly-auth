@@ -75,7 +75,7 @@
             }
         },
         "/landlord/property/list/": {
-            "put": {
+            "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -575,7 +575,7 @@
             }
         },
         "/tenant/property/list/": {
-            "put": {
+            "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []

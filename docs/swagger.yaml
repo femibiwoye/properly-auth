@@ -145,7 +145,7 @@ paths:
       tags:
       - accounts
   /landlord/property/list/:
-    put:
+    get:
       consumes:
       - application/json
       parameters:
@@ -464,7 +464,7 @@ paths:
       tags:
       - accounts
   /tenant/property/list/:
-    put:
+    get:
       consumes:
       - application/json
       parameters:
