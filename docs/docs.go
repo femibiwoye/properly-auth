@@ -371,7 +371,7 @@ var doc = `{
             }
         },
         "/reset/update-password/": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -747,7 +747,7 @@ var doc = `{
             }
         },
         "/user/change-password/": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []

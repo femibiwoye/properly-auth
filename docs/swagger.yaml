@@ -324,7 +324,7 @@ paths:
       tags:
       - accounts
   /reset/update-password/:
-    post:
+    put:
       consumes:
       - application/json
       description: user to reset link or tokne to user mail
@@ -563,7 +563,7 @@ paths:
       tags:
       - accounts
   /user/change-password/:
-    post:
+    put:
       consumes:
       - application/json
       description: user to change user password via mail

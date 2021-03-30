@@ -153,7 +153,7 @@ func SignUp(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /reset/update-password/ [post]
+// @Router /reset/update-password/ [put]
 // @Security ApiKeyAuth
 func ResetPassword(c *gin.Context) {
 	data := models.ResetPassword{}
@@ -214,7 +214,7 @@ func ResetPassword(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /user/change-password/ [post]
+// @Router /user/change-password/ [put]
 // @Security ApiKeyAuth
 func ChangePasswordAuth(c *gin.Context) {
 	data := models.ChangeUserPassword{}
