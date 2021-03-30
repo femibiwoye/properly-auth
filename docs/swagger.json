@@ -356,7 +356,7 @@
             }
         },
         "/reset/update-password/": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -732,7 +732,7 @@
             }
         },
         "/user/change-password/": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
