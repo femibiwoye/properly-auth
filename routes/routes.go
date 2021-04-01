@@ -10,6 +10,20 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// ServeFile godoc
+// @Summary endpoints to return save files
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Produce  gif,png,jpeg
+// @Router /serve/media/:filename [get]
+// @Security ApiKeyAuth
+func ServeFile(c *gin.Context) {
+	name := c.Param("filename")
+	rootDir := os.Getenv("ROOTDIR")
+	c.File(fmt.Sprintf("%s/public/media/%s", rootDir, name))
+}
+
 //Router instanciate all routes in the application
 func Router() *gin.Engine {
 
@@ -20,11 +34,7 @@ func Router() *gin.Engine {
 	v1.GET("/", func(c *gin.Context) {
 		c.String(200, "Welcome to properly")
 	})
-	v1.GET("/serve/media/:filename", func(c *gin.Context) {
-		name := c.Param("filename")
-		rootDir := os.Getenv("ROOTDIR")
-		c.File(fmt.Sprintf("%s/public/media/%s", rootDir, name))
-	})
+	v1.GET("/serve/media/:filename", ServeFile)
 
 	v1.POST("/signup/", controllers.SignUp)
 	v1.PUT("/reset/update-password/", controllers.ResetPassword)
@@ -39,6 +49,7 @@ func Router() *gin.Engine {
 	manager := v1.Group("/manager")
 	manager.PUT("/create/property/", controllers.CreateProperty)
 	manager.PUT("/update/property/", controllers.UpdatePropertyRoute)
+	manager.DELETE("/remove/attachment/", controllers.RemoveAttachment)
 
 	landlord := v1.Group("/landlord")
 	landlord.PUT("/property/add/", controllers.AddLandlordToProperty)

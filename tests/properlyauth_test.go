@@ -74,6 +74,8 @@ func TestScoodent(t *testing.T) {
 	testAddTenant(t, http.StatusOK)
 	testListTenant(t, http.StatusOK)
 	testRemoveTenant(t, http.StatusOK)
+	testRemoveAttachment(t, http.StatusOK, "images")
+	testRemoveAttachment(t, http.StatusOK, "documents")
 }
 
 func cleanUpDb() {

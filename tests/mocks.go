@@ -8,6 +8,8 @@ var (
 	router     = routes.Router()
 	tokens     = []string{}
 	propertyID = []string{}
+	documents  = []string{}
+	images     = []string{}
 )
 
 type mockReadCloser struct {

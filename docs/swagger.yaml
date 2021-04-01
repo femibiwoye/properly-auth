@@ -287,6 +287,41 @@ paths:
         property
       tags:
       - accounts
+  /manager/remove/attachment/:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: details
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateProperty'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to remove an image or document attached to a property
+      tags:
+      - accounts
   /manager/update/property/:
     put:
       consumes:
@@ -393,6 +428,19 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: ChangePasswordFromToken changes user password from token sent along
+      tags:
+      - accounts
+  /serve/media/:filename:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - image/gif
+      - image/png
+      - image/jpeg
+      security:
+      - ApiKeyAuth: []
+      summary: endpoints to return save files
       tags:
       - accounts
   /signup/:

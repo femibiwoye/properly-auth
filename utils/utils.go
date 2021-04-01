@@ -187,3 +187,9 @@ func MissingDataResponse(dataModel interface{}) (map[string][]string, error) {
 	}
 	return response, nil
 }
+
+func RemoveFromArray(s []string, index int) []string {
+	s[index] = s[len(s)-1]
+	s = s[:len(s)-1]
+	return s
+}

@@ -21,3 +21,9 @@ type AddLandlord struct {
 type ListType struct {
 	PropertyID string
 }
+
+type RemoveAttachmentModel struct {
+	PropertyID     string
+	AttachmentName string
+	AttachmentType string
+}
