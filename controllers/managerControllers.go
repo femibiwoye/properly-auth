@@ -79,7 +79,7 @@ func CreateProperty(c *gin.Context) {
 	property.CreatedBy = userFetch.ID
 	property.Status = "created"
 
-	if err := models.InsertProperty(&property); err != nil {
+	if err := models.Insert(&property, models.PropertyCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
@@ -115,9 +115,14 @@ func UpdatePropertyRoute(c *gin.Context) {
 		return
 	}
 
-	property, _ := models.FetchPropertyByCriterion("id", data.ID)
-	if property == nil {
+	propertyM, _ := models.FetchDocByCriterion("id", data.ID, models.PropertyCollectionName)
+	if propertyM == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Property not found"), errorResponse)
+		return
+	}
+	property, err := models.ToPropertyFromM(propertyM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return
 	}
 	data.ID = ""
@@ -187,8 +192,8 @@ func RemoveAttachment(c *gin.Context) {
 		return
 	}
 
-	property, _ := models.FetchPropertyByCriterion("id", data.PropertyID)
-	if property == nil {
+	propertyM, _ := models.FetchDocByCriterion("id", data.PropertyID, models.PropertyCollectionName)
+	if propertyM == nil {
 		_, ok := errorResponse["PropertyID"]
 		if !ok {
 			errorResponse["propertyid"] = []string{"Property id doesn't match  any property"}
@@ -197,6 +202,11 @@ func RemoveAttachment(c *gin.Context) {
 		return
 	}
 
+	property, err := models.ToPropertyFromM(propertyM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
 	updated := false
 	if strings.Trim(data.AttachmentType, " ") == "documents" {
 		for i, doc := range property.Documents {
@@ -231,10 +241,27 @@ func RemoveAttachment(c *gin.Context) {
 		return
 	}
 
-	if updated{
+	if updated {
 		models.NewResponse(c, http.StatusOK, fmt.Errorf("Property is updated"), updated)
-	}else{
+	} else {
 		models.NewResponse(c, http.StatusOK, fmt.Errorf("Nothing was updated"), updated)
 	}
+
+}
+
+// ScheduleInspection godoc
+// @Summary endpoint to remove an image or document attached to a property
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Param  details body models.CreateProperty true "details"
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /manager/inspection/schedule/ [delete]
+// @Security ApiKeyAuth
+func ScheduleInspection(c *gin.Context) {
 
 }

@@ -1,11 +1,7 @@
 package models
 
 import (
-	"context"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"properlyauth/database"
 )
 
 const (
@@ -29,76 +25,31 @@ type Property struct {
 	CreatedBy string            `json:"created_by"`
 }
 
-//InsertProperty insert a property into the database
-func InsertProperty(property *Property) error {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(PropertyCollectionName)
-	result, err := collection.InsertOne(context.TODO(), property)
-	if err != nil {
-		return err
-	}
-	property.ID = result.InsertedID.(primitive.ObjectID).Hex()
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "id", Value: property.ID}}}}
-	err = UpdateProperty(property, update)
-	return err
+func (p *Property) getID() string {
+	return p.ID
 }
 
-//UpdateProperty update a property into the database
-func UpdateProperty(property *Property, update interface{}) error {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(PropertyCollectionName)
-	s, err := primitive.ObjectIDFromHex(property.ID)
-	if err != nil {
-		return err
-	}
-	filter := bson.M{"_id": s}
-
-	opts := options.Update().SetUpsert(false)
-
-	_, err = collection.UpdateOne(context.TODO(), filter, update, opts)
-	return err
+func (p *Property) setID(id string) {
+	p.ID = id
 }
 
-//DeleteProperty remove a property from the db
-func DeleteProperty(user *User) error {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(PropertyCollectionName)
-	s, err := primitive.ObjectIDFromHex(user.ID)
-	if err != nil {
-		return err
-	}
-	filter := bson.M{"_id": s}
-
-	opts := options.Delete().SetCollation(&options.Collation{
-		Locale:    "en_US",
-		Strength:  1,
-		CaseLevel: false,
-	})
-
-	_, err = collection.DeleteOne(context.TODO(), filter, opts)
-	return err
+func (p *Property) getCreatedAt() int64 {
+	return p.CreatedAt
 }
 
-//FetchPropertyByCriterion returns a property struct that matches the particular criteria
-// i.e FetchPropertyByCriterion("Name","abraham") returns a user struct where Name is abraham
-func FetchPropertyByCriterion(criteria, value string) (*Property, error) {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(PropertyCollectionName)
-	filter := bson.M{criteria: value}
-	property := &Property{}
+func (p *Property) setCreatedAt(at int64) {
+	p.CreatedAt = at
+}
 
-	err := collection.FindOne(context.TODO(), filter).Decode(property)
-
+func ToPropertyFromM(mongoM bson.M) (*Property, error) {
+	uB, err := bson.Marshal(mongoM)
 	if err != nil {
 		return nil, err
 	}
-	return property, nil
+	p := &Property{}
+	err = bson.Unmarshal(uB, p)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }

@@ -56,7 +56,7 @@ func updateUser(user *models.User) error {
 	if err != nil {
 		return err
 	}
-	err = models.UpdateUser(user, bson.D{{Key: "$set", Value: update}})
+	err = models.Update(user, bson.D{{Key: "$set", Value: update}}, models.UserCollectionName)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
-	userFound, err := models.FetchUserByCriterion("email", data.Email)
+	userFound, err := models.FetchDocByCriterion("email", data.Email, models.UserCollectionName)
 	if err != nil && err != mongo.ErrNoDocuments {
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return
@@ -122,7 +122,7 @@ func SignUp(c *gin.Context) {
 	user.Password = utils.SHA256Hash(data.Password)
 	user.CreatedAt = time.Now().Unix()
 	user.PUMCCode = utils.GeneratePUMCCode(6)
-	if err := models.InsertUser(user); err != nil {
+	if err := models.Insert(user, models.UserCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while inserting user"), struct{}{})
 		return
 	}
@@ -161,7 +161,7 @@ func ResetPassword(c *gin.Context) {
 	if isError {
 		return
 	}
-	userFound, _ := models.FetchUserByCriterion("email", data.Email)
+	userFound, _ := models.FetchDocByCriterion("email", data.Email, models.UserCollectionName)
 
 	if userFound == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
@@ -229,13 +229,18 @@ func ChangePasswordAuth(c *gin.Context) {
 		return
 	}
 
-	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
+	userM, _ := models.FetchDocByCriterion("id", res["user_id"], models.UserCollectionName)
 
-	if userFetch == nil {
+	if userM == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), false)
 		return
 	}
 
+	userFetch, err := models.ToUserFromM(userM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
 	if userFetch.Password != utils.SHA256Hash(data.OldPassword) {
 		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Wrong old password"), nil)
 		return
@@ -293,12 +298,17 @@ func ChangePasswordFromToken(c *gin.Context) {
 	email = data.Email
 	password = data.Password
 
-	userFetch, _ := models.FetchUserByCriterion("email", email)
-	if userFetch == nil {
+	userM, _ := models.FetchDocByCriterion("email", email, models.UserCollectionName)
+	if userM == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
 		return
 	}
 
+	userFetch, err := models.ToUserFromM(userM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
 	userFetch.Password = utils.SHA256Hash(password)
 	err = updateUser(userFetch)
 	if err != nil {
@@ -335,7 +345,7 @@ func SignIn(c *gin.Context) {
 		return
 	}
 
-	userFound, err := models.FetchUserByCriterion("email", data.Email)
+	userFound, err := models.FetchDocByCriterion("email", data.Email, models.UserCollectionName)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
@@ -347,12 +357,13 @@ func SignIn(c *gin.Context) {
 		return
 	}
 
-	if userFound.Password != utils.SHA256Hash(data.Password) {
+	if value, ok := userFound["password"]; ok && value != utils.SHA256Hash(data.Password) {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Incorrect  Login details"), nil)
 		return
 	}
 
-	token, err := utils.CreateToken(userFound.ID)
+	id, _ := userFound["id"]
+	token, err := utils.CreateToken(id.(string))
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error creating token"), nil)
 		return
@@ -389,7 +400,7 @@ func UserProfile(c *gin.Context) {
 		models.NewResponse(c, http.StatusUnauthorized, err, nil)
 		return
 	}
-	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
+	userFetch, _ := models.FetchDocByCriterion("id", res["user_id"], models.UserCollectionName)
 
 	if userFetch == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("user not found"), nil)
@@ -438,13 +449,17 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
+	userM, _ := models.FetchDocByCriterion("id", res["user_id"], models.UserCollectionName)
 
-	if userFetch == nil {
+	if userM == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("user not found"), nil)
 		return
 	}
-
+	userFetch, err := models.ToUserFromM(userM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
 	v, err := struct2map.Struct2Map(&data)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
@@ -499,10 +514,15 @@ func UpdateProfileImage(c *gin.Context) {
 		models.NewResponse(c, http.StatusUnauthorized, err, nil)
 		return
 	}
-	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
+	userM, _ := models.FetchDocByCriterion("id", res["user_id"], models.UserCollectionName)
 
-	if userFetch == nil {
+	if userM == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("user not found"), nil)
+		return
+	}
+	userFetch, err := models.ToUserFromM(userM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return
 	}
 
