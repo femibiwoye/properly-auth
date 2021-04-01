@@ -25,11 +25,10 @@ func updateProperty(property *models.Property) error {
 	if err != nil {
 		return err
 	}
-	err = models.UpdateProperty(property, bson.D{{Key: "$set", Value: update}})
+	err = models.Update(property, bson.D{{Key: "$set", Value: update}}, models.PropertyCollectionName)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -47,7 +46,6 @@ func handleMediaUploads(c *gin.Context, nameOf string, form *multipart.Form) ([]
 		}
 		names = append(names, filename)
 	}
-
 	if len(errors) > 0 {
 		return names, errors[0]
 	}
@@ -65,13 +63,17 @@ func checkUser(c *gin.Context, checkManager bool) (*models.User, string, bool) {
 		return nil, "", false
 	}
 
-	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
+	userM, err := models.FetchDocByCriterion("id", res["user_id"], models.UserCollectionName)
 
-	if userFetch == nil {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Token doesn't match any user"), struct{}{})
+	if userM == nil {
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("user not found"), res)
 		return nil, "", false
 	}
-
+	userFetch, err := models.ToUserFromM(userM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return nil, "", false
+	}
 	if checkManager {
 		if userFetch.Type != models.Manager {
 			models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Only managers can create and change properties"), userFetch)
@@ -91,6 +93,7 @@ func validateProperty(c *gin.Context, typed, operation string) (*models.Property
 	data := models.AddLandlord{}
 	c.ShouldBindJSON(&data)
 
+	//fmt.Prin
 	errorResponse, err := utils.MissingDataResponse(data)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
@@ -108,8 +111,8 @@ func validateProperty(c *gin.Context, typed, operation string) (*models.Property
 		}
 	}
 
-	property, _ := models.FetchPropertyByCriterion("id", data.PropertyID)
-	if property == nil {
+	propertyM, _ := models.FetchDocByCriterion("id", data.PropertyID, models.PropertyCollectionName)
+	if propertyM == nil {
 		_, ok := errorResponse["PropertyID"]
 		if !ok {
 			errorResponse["propertyid"] = []string{"Property id doesn't match  any property"}
@@ -118,16 +121,27 @@ func validateProperty(c *gin.Context, typed, operation string) (*models.Property
 		return nil, nil, false
 	}
 
-	userFetch, _ := models.FetchUserByCriterion("id", data.UserID)
+	userM, err := models.FetchDocByCriterion("id", data.UserID, models.UserCollectionName)
 
-	if userFetch == nil && operation != "List" {
+	if userM == nil && operation != "List" {
 		errorResponse["userid"] = []string{"User id doesn't match  any user"}
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("The User to %s not found", operation), errorResponse)
 		return nil, nil, false
 	}
 
+	userFetch, err := models.ToUserFromM(userM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return nil, nil, false
+	}
+
 	if operation != "List" && userFetch.Type != typed {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Can't not %s non %s to property using this endpoint", operation, typed), struct{}{})
+		return nil, nil, false
+	}
+	property, err := models.ToPropertyFromM(propertyM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return nil, nil, false
 	}
 
@@ -153,7 +167,7 @@ func augmentProperty(c *gin.Context, typed, operation string, f func(map[string]
 		values = mapKeysToArray(property.Vendors)
 	}
 
-	users, err := models.FetchUserByCriterionMultiple(field, values)
+	users, err := models.FetchDocByCriterionMultiple(field, models.UserCollectionName, values)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
@@ -190,7 +204,7 @@ func fetchList(c *gin.Context, typed string) {
 		values = mapKeysToArray(property.Vendors)
 	}
 
-	users, err := models.FetchUserByCriterionMultiple(field, values)
+	users, err := models.FetchDocByCriterionMultiple(field, models.UserCollectionName, values)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return

@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"properlyauth/database"
 	"time"
@@ -11,8 +10,8 @@ import (
 
 const (
 	//UserCollectionName holds the collection on mongodb where user detailas are being stored
-	UserCollectionName             = "User"
-	phoneNoTempTokenCollectionName = "TempToken"
+	UserCollectionName      = "User"
+	TempTokenCollectionName = "TempToken"
 )
 
 const (
@@ -37,60 +36,33 @@ type User struct {
 	PUMCCode        string `json:"pumccode"`
 }
 
-//InsertUser insert a user into the database
-func InsertUser(user *User) error {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(UserCollectionName)
-	result, err := collection.InsertOne(context.TODO(), user)
-	if err != nil {
-		return err
-	}
-	user.ID = result.InsertedID.(primitive.ObjectID).Hex()
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "id", Value: user.ID}}}}
-	err = UpdateUser(user, update)
-	return err
+func (u *User) getID() string {
+	return u.ID
 }
 
-//UpdateUser update a user into the database
-func UpdateUser(user *User, update interface{}) error {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(UserCollectionName)
-	s, err := primitive.ObjectIDFromHex(user.ID)
-	if err != nil {
-		return err
-	}
-	filter := bson.M{"_id": s}
-
-	opts := options.Update().SetUpsert(false)
-
-	_, err = collection.UpdateOne(context.TODO(), filter, update, opts)
-	return err
+func (u *User) setID(id string) {
+	u.ID = id
 }
 
-//DeleteUser remove a user from the db
-func DeleteUser(user *User) error {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(UserCollectionName)
-	s, err := primitive.ObjectIDFromHex(user.ID)
+func (u *User) getCreatedAt() int64 {
+	return u.CreatedAt
+}
+
+func (u *User) setCreatedAt(at int64) {
+	u.CreatedAt = at
+}
+
+func ToUserFromM(mongoM bson.M) (*User, error) {
+	uB, err := bson.Marshal(mongoM)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	filter := bson.M{"_id": s}
-
-	opts := options.Delete().SetCollation(&options.Collation{
-		Locale:    "en_US",
-		Strength:  1,
-		CaseLevel: false,
-	})
-
-	_, err = collection.DeleteOne(context.TODO(), filter, opts)
-	return err
+	u := &User{}
+	err = bson.Unmarshal(uB, u)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }
 
 //SaveToken saves an token  for authentication later on
@@ -101,7 +73,7 @@ func SaveToken(key, value, platform string) error {
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{Key: key}}
 	update := bson.D{{"$set", bson.M{"key": key, "value": value, "platform": platform, "time": time.Now().Unix()}}}
-	collection := client.Database(database.DbName).Collection(phoneNoTempTokenCollectionName)
+	collection := client.Database(database.DbName).Collection(TempTokenCollectionName)
 	_, err := collection.UpdateOne(context.TODO(), filter, update, opts)
 	return err
 }
@@ -111,7 +83,7 @@ func FetchToken(email string) (map[string]interface{}, error) {
 	db := database.GetMongoDB()
 	client := db.GetClient()
 	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(phoneNoTempTokenCollectionName)
+	collection := client.Database(database.DbName).Collection(TempTokenCollectionName)
 	filter := bson.M{"key": email}
 	res := make(map[string]interface{})
 	err := collection.FindOne(context.TODO(), filter).Decode(res)
@@ -127,7 +99,7 @@ func TakeOutToken(email string) error {
 	db := database.GetMongoDB()
 	client := db.GetClient()
 	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(phoneNoTempTokenCollectionName)
+	collection := client.Database(database.DbName).Collection(TempTokenCollectionName)
 	filter := bson.M{"key": email}
 	opts := options.Delete().SetCollation(&options.Collation{
 		Locale:    "en_US",
@@ -136,43 +108,4 @@ func TakeOutToken(email string) error {
 	})
 	_, err := collection.DeleteOne(context.TODO(), filter, opts)
 	return err
-}
-
-//FetchUserByCriterion returns a user struct that tha matches the particular criteria
-// i.e FetchUserByCriterion("username","abraham") returns a user struct where username is abraham
-func FetchUserByCriterion(criteria, value string) (*User, error) {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(UserCollectionName)
-	filter := bson.M{criteria: value}
-	user := &User{}
-
-	err := collection.FindOne(context.TODO(), filter).Decode(user)
-
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
-//FetchUserByCriterionMultiple returns a users struct that tha matches the particular criteria
-// i.e FetchUserByCriterion("username","abraham") returns a user struct where username is abraham and more
-func FetchUserByCriterionMultiple(criteria string, values []string) ([]*User, error) {
-	db := database.GetMongoDB()
-	client := db.GetClient()
-	defer database.PutDBBack(db)
-	collection := client.Database(database.DbName).Collection(UserCollectionName)
-	filter := bson.M{criteria: bson.M{"$in": values}}
-	users := []*User{}
-
-	opts := options.Find().SetSort(bson.D{{"CreatedAt", 1}}).SetProjection(bson.M{"password": 0})
-	cursor, err := collection.Find(context.TODO(), filter, opts)
-	if err != nil {
-		return nil, err
-	}
-	if err = cursor.All(context.TODO(), &users); err != nil {
-		return nil, err
-	}
-	return users, nil
 }

@@ -27,3 +27,9 @@ type RemoveAttachmentModel struct {
 	AttachmentName string
 	AttachmentType string
 }
+
+type ScheduleInspectionModel struct {
+	PropertyID     string
+	AttachmentName string
+	AttachmentType string
+}
