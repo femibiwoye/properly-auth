@@ -68,7 +68,7 @@ func checkUser(c *gin.Context, checkManager bool) (*models.User, string, bool) {
 	userFetch, _ := models.FetchUserByCriterion("id", res["user_id"])
 
 	if userFetch == nil {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("user not found"), struct{}{})
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Token doesn't match any user"), struct{}{})
 		return nil, "", false
 	}
 
@@ -121,7 +121,7 @@ func validateProperty(c *gin.Context, typed, operation string) (*models.Property
 	userFetch, _ := models.FetchUserByCriterion("id", data.UserID)
 
 	if userFetch == nil && operation != "List" {
-		errorResponse["userid"] = []string{"User id doesn't return match  any user"}
+		errorResponse["userid"] = []string{"User id doesn't match  any user"}
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("The User to %s not found", operation), errorResponse)
 		return nil, nil, false
 	}
@@ -161,7 +161,7 @@ func augmentProperty(c *gin.Context, typed, operation string, f func(map[string]
 
 	updateProperty(property)
 
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("New %s added to this property", typed), users)
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("%s %s from this property", typed, operation), users)
 
 }
 

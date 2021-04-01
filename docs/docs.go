@@ -314,6 +314,62 @@ var doc = `{
                 }
             }
         },
+        "/manager/remove/attachment/": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "endpoint to remove an image or document attached to a property",
+                "parameters": [
+                    {
+                        "description": "details",
+                        "name": "details",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateProperty"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
         "/manager/update/property/": {
             "put": {
                 "security": [
@@ -482,6 +538,27 @@ var doc = `{
                         }
                     }
                 }
+            }
+        },
+        "/serve/media/:filename": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "image/gif",
+                    "image/png",
+                    "image/jpeg"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "endpoints to return save files"
             }
         },
         "/signup/": {
