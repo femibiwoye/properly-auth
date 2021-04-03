@@ -6,16 +6,17 @@ import (
 
 const (
 	//UserCollectionName holds the collection on mongodb where user detailas are being stored
-	InspectionName = "Inspection"
+	InspectionCollectionaName = "Inspection"
 )
 
 //Inspection decribes a property inspection on properly
 type Inspection struct {
-	ID        string `json:"id"`
-	CreatedAt int64  `json:"created_at"`
-	Password  string `json:"password"`
-	Status    bool   `json:"status"`
-	DueTime   int64  `json:"duetime"`
+	ID         string `json:"id"`
+	CreatedAt  int64  `json:"created_at"`
+	Text       string `json:"text"`
+	DueTime    int64  `json:"duetime"`
+	CreatedBy  string `json:"created_by"`
+	PropertyId string `json:"property_id"`
 }
 
 func (i *Inspection) getID() string {

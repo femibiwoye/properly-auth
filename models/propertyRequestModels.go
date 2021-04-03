@@ -18,6 +18,14 @@ type AddLandlord struct {
 	PropertyID string
 }
 
+func (a *AddLandlord) GetUserID() string {
+	return a.UserID
+}
+
+func (a *AddLandlord) GetPropertyID() string {
+	return a.PropertyID
+}
+
 type ListType struct {
 	PropertyID string
 }

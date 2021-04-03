@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -179,9 +180,14 @@ func MissingDataResponse(dataModel interface{}) (map[string][]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	for i, v := range value {
-		if v == 0 || v == "" || v == nil {
+		if reflect.TypeOf(v) == reflect.TypeOf(int64(0)) {
+			n := v.(int64)
+			if n == 0 {
+				response[i] = []string{fmt.Sprintf("%s cannot be blank.", i)}
+			}
+		}
+		if v == "" || v == nil {
 			response[i] = []string{fmt.Sprintf("%s cannot be blank.", i)}
 		}
 	}

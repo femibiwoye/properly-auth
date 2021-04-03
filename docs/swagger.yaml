@@ -42,6 +42,20 @@ definitions:
         example: status bad request
         type: string
     type: object
+  models.InspectionDeleteModel:
+    properties:
+      inspectionID:
+        type: string
+    type: object
+  models.InspectionModel:
+    properties:
+      date:
+        type: integer
+      propertyID:
+        type: string
+      text:
+        type: string
+    type: object
   models.ListType:
     properties:
       propertyID:
@@ -79,6 +93,15 @@ definitions:
       password:
         type: string
       type:
+        type: string
+    type: object
+  models.UpdateInspectionModel:
+    properties:
+      date:
+        type: integer
+      inspectionID:
+        type: string
+      text:
         type: string
     type: object
   models.UpdateUserModel:
@@ -285,6 +308,111 @@ paths:
       - ApiKeyAuth: []
       summary: endpoint to Create a property. Only manager are capable of creating
         property
+      tags:
+      - accounts
+  /manager/inspection/delete/:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: details
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.InspectionDeleteModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to remove an inspection
+      tags:
+      - accounts
+  /manager/inspection/schedule/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: request details
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.InspectionModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to create an inspection on a property
+      tags:
+      - accounts
+  /manager/inspection/update/:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request details
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateInspectionModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint update an existing inspection
       tags:
       - accounts
   /manager/remove/attachment/:

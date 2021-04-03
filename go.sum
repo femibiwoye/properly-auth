@@ -81,6 +81,10 @@ github.com/haibeey/struct2Map v0.0.0-20210324120956-e71e7f417ed0 h1:iICkIenJAIQK
 github.com/haibeey/struct2Map v0.0.0-20210324120956-e71e7f417ed0/go.mod h1:PdqOwP+iz2pZkeHstsCqwbGn0xqVU9bpTq5sP5qfzEM=
 github.com/haibeey/struct2Map v0.0.1 h1:xrvCm6YLvlBaDyubKPWKiRj156R0lsJWr3nVb870f8E=
 github.com/haibeey/struct2Map v0.0.1/go.mod h1:PdqOwP+iz2pZkeHstsCqwbGn0xqVU9bpTq5sP5qfzEM=
+github.com/haibeey/struct2Map v0.0.2 h1:PXuwuSoK1UZSAH2B7rk7W1c+VIkqUztF0l+BnGbcOKE=
+github.com/haibeey/struct2Map v0.0.2/go.mod h1:PdqOwP+iz2pZkeHstsCqwbGn0xqVU9bpTq5sP5qfzEM=
+github.com/haibeey/struct2Map v0.0.3 h1:VD+qGi4ZogMSm8pweZLqJyT4TOi13YBfwepvNaUNyso=
+github.com/haibeey/struct2Map v0.0.3/go.mod h1:PdqOwP+iz2pZkeHstsCqwbGn0xqVU9bpTq5sP5qfzEM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=

@@ -26,10 +26,11 @@ func handleInterupt() {
 	}()
 }
 
-func TestScoodent(t *testing.T) {
+func TestProperly(t *testing.T) {
 
 	os.Setenv("HOST", "127.0.0.1:8080")
 	os.Setenv("TESTING", "TESTING")
+	os.Setenv("DBNAME", "properlytesting")
 	err := godotenv.Load("../.env")
 	if err != nil {
 		t.Fatalf("Error loading .env file")
@@ -76,6 +77,9 @@ func TestScoodent(t *testing.T) {
 	testRemoveTenant(t, http.StatusOK)
 	testRemoveAttachment(t, http.StatusOK, "images")
 	testRemoveAttachment(t, http.StatusOK, "documents")
+	testAddInspection(t, http.StatusCreated)
+	testUpdateInspection(t, http.StatusOK)
+	testRemoveInspection(t, http.StatusOK)
 }
 
 func cleanUpDb() {

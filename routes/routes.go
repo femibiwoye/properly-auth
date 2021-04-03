@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"os"
 	"properlyauth/controllers"
+	managerRoutes "properlyauth/controllers/manager"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -47,19 +48,22 @@ func Router() *gin.Engine {
 	v1.PUT("/user/update-profile-image/", controllers.UpdateProfileImage)
 
 	manager := v1.Group("/manager")
-	manager.PUT("/create/property/", controllers.CreateProperty)
-	manager.PUT("/update/property/", controllers.UpdatePropertyRoute)
-	manager.DELETE("/remove/attachment/", controllers.RemoveAttachment)
+	manager.PUT("/create/property/", managerRoutes.CreateProperty)
+	manager.PUT("/update/property/", managerRoutes.UpdatePropertyRoute)
+	manager.DELETE("/remove/attachment/", managerRoutes.RemoveAttachment)
+	manager.PUT("/inspection/schedule/", managerRoutes.ScheduleInspection)
+	manager.POST("/inspection/update/", managerRoutes.UpdateInspection)
+	manager.DELETE("/inspection/delete/", managerRoutes.DeleteInspection)
 
 	landlord := v1.Group("/landlord")
-	landlord.PUT("/property/add/", controllers.AddLandlordToProperty)
-	landlord.PUT("/property/remove/", controllers.RemoveLandlordFromProperty)
-	landlord.GET("/property/list/", controllers.ListLandlordFromProperty)
+	landlord.PUT("/property/add/", managerRoutes.AddLandlordToProperty)
+	landlord.PUT("/property/remove/", managerRoutes.RemoveLandlordFromProperty)
+	landlord.GET("/property/list/", managerRoutes.ListLandlordFromProperty)
 
 	tenant := v1.Group("/tenant")
-	tenant.PUT("/property/add/", controllers.AddTenantToProperty)
-	tenant.PUT("/property/remove/", controllers.RemoveTenantFromProperty)
-	tenant.GET("/property/list/", controllers.ListTenantFromProperty)
+	tenant.PUT("/property/add/", managerRoutes.AddTenantToProperty)
+	tenant.PUT("/property/remove/", managerRoutes.RemoveTenantFromProperty)
+	tenant.GET("/property/list/", managerRoutes.ListTenantFromProperty)
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
