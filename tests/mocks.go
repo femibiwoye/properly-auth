@@ -5,11 +5,12 @@ import (
 )
 
 var (
-	router     = routes.Router()
-	tokens     = []string{}
-	propertyID = []string{}
-	documents  = []string{}
-	images     = []string{}
+	router       = routes.Router()
+	tokens       = []string{}
+	propertyID   = []string{}
+	documents    = []string{}
+	images       = []string{}
+	inspectionID = []string{}
 )
 
 type mockReadCloser struct {

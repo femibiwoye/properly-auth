@@ -13,56 +13,11 @@ import (
 
 	"github.com/badoux/checkmail"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	struct2map "github.com/haibeey/struct2Map"
 	"github.com/mitchellh/mapstructure"
 )
-
-func getPlatform(c *gin.Context) (string, error) {
-	query := c.Request.URL.Query()
-	platform, ok := query["platform"]
-
-	if !ok || len(platform) <= 0 {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid platform"), nil)
-		return "", fmt.Errorf("No query sent for platform type sent")
-	}
-	return strings.Trim(platform[0], " "), nil
-}
-
-func errorReponses(c *gin.Context, data interface{}, api string) (string, bool) {
-	platform, err := getPlatform(c)
-	if err != nil {
-		return platform, true
-	}
-
-	c.ShouldBindJSON(&data)
-	errorReponse, err := utils.MissingDataResponse(data)
-	if len(errorReponse) > 0 {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("You provided invalid %s details", api), errorReponse)
-		return platform, true
-	}
-	return platform, false
-}
-
-func updateUser(user *models.User) error {
-	uB, err := bson.Marshal(user)
-	if err != nil {
-		return err
-	}
-	var update bson.M
-	err = bson.Unmarshal(uB, &update)
-	if err != nil {
-		return err
-	}
-	err = models.Update(user, bson.D{{Key: "$set", Value: update}}, models.UserCollectionName)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // SignUp godoc
 // @Summary is the endpoint for user signup.
@@ -78,7 +33,7 @@ func updateUser(user *models.User) error {
 // @Router /signup/ [post]
 func SignUp(c *gin.Context) {
 	data := models.SignUpData{}
-	_, isError := errorReponses(c, &data, "signup")
+	_, isError := ErrorReponses(c, &data, "signup")
 	if isError {
 		return
 	}
@@ -108,7 +63,7 @@ func SignUp(c *gin.Context) {
 
 	userFound, err := models.FetchDocByCriterion("email", data.Email, models.UserCollectionName)
 	if err != nil && err != mongo.ErrNoDocuments {
-		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		models.NewResponse(c, http.StatusInternalServerError, err, "omo")
 		return
 	}
 	if userFound != nil {
@@ -157,7 +112,7 @@ func SignUp(c *gin.Context) {
 // @Security ApiKeyAuth
 func ResetPassword(c *gin.Context) {
 	data := models.ResetPassword{}
-	platform, isError := errorReponses(c, &data, "Reset Password")
+	platform, isError := ErrorReponses(c, &data, "Reset Password")
 	if isError {
 		return
 	}
@@ -218,7 +173,7 @@ func ResetPassword(c *gin.Context) {
 // @Security ApiKeyAuth
 func ChangePasswordAuth(c *gin.Context) {
 	data := models.ChangeUserPassword{}
-	_, isError := errorReponses(c, &data, "Change password")
+	_, isError := ErrorReponses(c, &data, "Change password")
 	if isError {
 		return
 	}
@@ -248,7 +203,7 @@ func ChangePasswordAuth(c *gin.Context) {
 
 	userFetch.Password = utils.SHA256Hash(data.Password)
 
-	err = updateUser(userFetch)
+	err = UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
@@ -274,7 +229,7 @@ func ChangePasswordFromToken(c *gin.Context) {
 	var password string
 
 	data := models.ChangeUserPasswordFromToken{}
-	_, isError := errorReponses(c, &data, "Update password")
+	_, isError := ErrorReponses(c, &data, "Update password")
 	if isError {
 		return
 	}
@@ -310,7 +265,7 @@ func ChangePasswordFromToken(c *gin.Context) {
 		return
 	}
 	userFetch.Password = utils.SHA256Hash(password)
-	err = updateUser(userFetch)
+	err = UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
@@ -335,7 +290,7 @@ func ChangePasswordFromToken(c *gin.Context) {
 // @Security ApiKeyAuth
 func SignIn(c *gin.Context) {
 	data := models.LoginData{}
-	_, isError := errorReponses(c, &data, "Login")
+	_, isError := ErrorReponses(c, &data, "Login")
 	if isError {
 		return
 	}
@@ -391,7 +346,7 @@ func SignIn(c *gin.Context) {
 // @Router /user/ [get]
 // @Security ApiKeyAuth
 func UserProfile(c *gin.Context) {
-	_, err := getPlatform(c)
+	_, err := GetPlatform(c)
 	if err != nil {
 		return
 	}
@@ -432,7 +387,7 @@ func UserProfile(c *gin.Context) {
 // @Router /user/update/ [put]
 // @Security ApiKeyAuth
 func UpdateProfile(c *gin.Context) {
-	_, err := getPlatform(c)
+	_, err := GetPlatform(c)
 	if err != nil {
 		return
 	}
@@ -477,7 +432,7 @@ func UpdateProfile(c *gin.Context) {
 	}
 
 	mapstructure.Decode(mapToUpdate, userFetch)
-	err = updateUser(userFetch)
+	err = UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
@@ -505,7 +460,7 @@ func UpdateProfile(c *gin.Context) {
 // @Router /user/update-profile-image/ [put]
 // @Security ApiKeyAuth
 func UpdateProfileImage(c *gin.Context) {
-	_, err := getPlatform(c)
+	_, err := GetPlatform(c)
 	if err != nil {
 		return
 	}
@@ -551,7 +506,7 @@ func UpdateProfileImage(c *gin.Context) {
 	}
 	userFetch.ProfileImageURL = filename
 
-	err = updateUser(userFetch)
+	err = UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return

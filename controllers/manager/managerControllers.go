@@ -1,4 +1,4 @@
-package controllers
+package manager
 
 import (
 	"fmt"
@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/mitchellh/mapstructure"
+	"properlyauth/controllers"
 )
 
 // CreateProperty godoc
@@ -29,7 +30,7 @@ import (
 // @Router /manager/create/property/ [put]
 // @Security ApiKeyAuth
 func CreateProperty(c *gin.Context) {
-	userFetch, _, ok := checkUser(c, true)
+	userFetch, _, ok := controllers.CheckUser(c, true)
 	if !ok {
 		return
 	}
@@ -44,12 +45,12 @@ func CreateProperty(c *gin.Context) {
 		Type:    strings.Join(form.Value["type"], "\n"),
 		Address: strings.Join(form.Value["address"], "\n"),
 	}
-	_, isError := errorReponses(c, &data, "Create Property")
+	_, isError := controllers.ErrorReponses(c, &data, "Create Property")
 	if isError {
 		return
 	}
 
-	images, err := handleMediaUploads(c, "images", form)
+	images, err := controllers.HandleMediaUploads(c, "images", form)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
@@ -60,7 +61,7 @@ func CreateProperty(c *gin.Context) {
 		return
 	}
 
-	documents, err := handleMediaUploads(c, "documents", form)
+	documents, err := controllers.HandleMediaUploads(c, "documents", form)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
@@ -101,7 +102,7 @@ func CreateProperty(c *gin.Context) {
 // @Router /manager/update/property/ [put]
 // @Security ApiKeyAuth
 func UpdatePropertyRoute(c *gin.Context) {
-	_, _, ok := checkUser(c, true)
+	_, _, ok := controllers.CheckUser(c, true)
 	if !ok {
 		return
 	}
@@ -149,7 +150,7 @@ func UpdatePropertyRoute(c *gin.Context) {
 	data.ID = property.ID
 	mapstructure.Decode(mapToUpdate, property)
 	property.ID = data.ID
-	err = updateProperty(property)
+	err = controllers.UpdateData(property, models.PropertyCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, property)
 		return
@@ -173,7 +174,7 @@ func UpdatePropertyRoute(c *gin.Context) {
 // @Router /manager/remove/attachment/ [delete]
 // @Security ApiKeyAuth
 func RemoveAttachment(c *gin.Context) {
-	_, _, ok := checkUser(c, true)
+	_, _, ok := controllers.CheckUser(c, true)
 	if !ok {
 		return
 	}
@@ -235,7 +236,7 @@ func RemoveAttachment(c *gin.Context) {
 		return
 	}
 
-	err = updateProperty(property)
+	err = controllers.UpdateData(property, models.PropertyCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, property)
 		return
@@ -250,18 +251,148 @@ func RemoveAttachment(c *gin.Context) {
 }
 
 // ScheduleInspection godoc
-// @Summary endpoint to remove an image or document attached to a property
+// @Summary endpoint to create an inspection on a property
 // @Description
 // @Tags accounts
 // @Accept  json
-// @Param  details body models.CreateProperty true "details"
+// @Param  details body models.InspectionModel true "request details"
 // @Produce  json
 // @Success 200 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /manager/inspection/schedule/ [delete]
+// @Router /manager/inspection/schedule/ [put]
 // @Security ApiKeyAuth
 func ScheduleInspection(c *gin.Context) {
+	data := models.InspectionModel{}
+	_, _, user, ok := controllers.ValidateProperty(c, &data, false, "Schedule", "Inspection")
+	if !ok {
+		return
+	}
 
+	inspection := models.Inspection{}
+	inspection.CreatedAt = time.Now().Unix()
+	inspection.DueTime = data.Date
+	inspection.Text = data.Text
+	inspection.PropertyId = data.PropertyID
+	inspection.CreatedBy = user.ID
+
+	if err := models.Insert(&inspection, models.InspectionCollectionaName); err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
+	models.NewResponse(c, http.StatusCreated, fmt.Errorf("New Inspection Activity Created"), inspection)
+}
+
+// ScheduleInspection godoc
+// @Summary endpoint update an existing inspection
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Param  details body models.UpdateInspectionModel true "request details"
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /manager/inspection/update/ [post]
+// @Security ApiKeyAuth
+func UpdateInspection(c *gin.Context) {
+
+	_, _, ok := controllers.CheckUser(c, true)
+	if !ok {
+		return
+	}
+
+	data := models.UpdateInspectionModel{}
+	c.ShouldBindJSON(&data)
+
+	errorResponse, err := utils.MissingDataResponse(data)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+
+	inspectionM, err := models.FetchDocByCriterion("id", data.InspectionID, models.InspectionCollectionaName)
+	if inspectionM == nil {
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Inspection not found"), errorResponse)
+		return
+	}
+	inspection, err := models.ToInspectionFromM(inspectionM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+
+	v, err := struct2map.Struct2Map(&data)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+
+	mapToUpdate := make(map[string]interface{})
+	response := make(map[string]interface{})
+	for key, value := range v {
+		_, ok := errorResponse[key]
+		if !ok {
+			mapToUpdate[key] = value
+			response[key] = []string{fmt.Sprintf("%s has been updated to %s", key, value)}
+		}
+	}
+
+	if len(response) <= 0 {
+		models.NewResponse(c, http.StatusOK, fmt.Errorf("Nothing was updated"), response)
+		return
+	}
+
+	mapstructure.Decode(mapToUpdate, inspection)
+	if err := controllers.UpdateData(inspection, models.InspectionCollectionaName); err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Inspection Updated"), response)
+}
+
+// ScheduleInspection godoc
+// @Summary endpoint to remove an inspection
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Param  details body models.InspectionDeleteModel true "details"
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /manager/inspection/delete/ [delete]
+// @Security ApiKeyAuth
+func DeleteInspection(c *gin.Context) {
+	_, _, ok := controllers.CheckUser(c, true)
+	if !ok {
+		return
+	}
+
+	data := models.InspectionDeleteModel{}
+	c.ShouldBindJSON(&data)
+
+	inspectionM, err := models.FetchDocByCriterion("id", data.InspectionID, models.InspectionCollectionaName)
+
+	if inspectionM == nil {
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Inspection not found"), struct{}{})
+		return
+	}
+	inspection, err := models.ToInspectionFromM(inspectionM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
+	if err := models.Delete(inspection, models.InspectionCollectionaName); err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Inspection Deleted"), struct{}{})
 }

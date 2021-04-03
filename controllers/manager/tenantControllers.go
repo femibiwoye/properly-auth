@@ -1,12 +1,13 @@
-package controllers
+package manager
 
 import (
 	"github.com/gin-gonic/gin"
+	"properlyauth/controllers"
 	"properlyauth/models"
 )
 
-// AddLandlordToProperty godoc
-// @Summary endpoint to add a landloard to a property. Only manager are capable of adding landlord property
+// AddTenantToProperty godoc
+// @Summary endpoint to add a tenant to a property. Only manager are capable of adding landlord property
 // @Description
 // @Tags accounts
 // @Accept  json
@@ -16,16 +17,16 @@ import (
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /landlord/property/add/ [put]
+// @Router /tenant/property/add/ [put]
 // @Security ApiKeyAuth
-func AddLandlordToProperty(c *gin.Context) {
-	augmentProperty(c, models.Landlord, "add", func(m map[string]string, id string) {
+func AddTenantToProperty(c *gin.Context) {
+	controllers.AugmentProperty(c, models.Tenant, "add", func(m map[string]string, id string) {
 		m[id] = id
 	})
 }
 
-// RemoveLandlordFromProperty godoc
-// @Summary endpoint to remove a landloard from a property. Only manager are capable of adding landlord property
+// RemoveTenantFromProperty godoc
+// @Summary endpoint to remove a tanent from a property. Only manager are capable of adding landlord property
 // @Description
 // @Tags accounts
 // @Accept  json
@@ -35,16 +36,16 @@ func AddLandlordToProperty(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /landlord/property/remove/ [put]
+// @Router /tenant/property/remove/ [put]
 // @Security ApiKeyAuth
-func RemoveLandlordFromProperty(c *gin.Context) {
-	augmentProperty(c, models.Landlord, "remove", func(m map[string]string, id string) {
+func RemoveTenantFromProperty(c *gin.Context) {
+	controllers.AugmentProperty(c, models.Tenant, "remove", func(m map[string]string, id string) {
 		delete(m, id)
 	})
 }
 
-// ListLandlordFromProperty godoc
-// @Summary return the landlords added to a property
+// ListTenantFromProperty godoc
+// @Summary list all tenant in a property
 // @Description
 // @Tags accounts
 // @Accept  json
@@ -54,8 +55,8 @@ func RemoveLandlordFromProperty(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /landlord/property/list/ [get]
+// @Router /tenant/property/list/ [get]
 // @Security ApiKeyAuth
-func ListLandlordFromProperty(c *gin.Context) {
-	fetchList(c, models.Landlord)
+func ListTenantFromProperty(c *gin.Context) {
+	controllers.FetchList(c, models.Tenant)
 }

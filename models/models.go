@@ -97,15 +97,15 @@ func FetchDocByCriterionMultiple(criteria, collectionName string, values []strin
 	defer database.PutDBBack(db)
 	collection := client.Database(database.DbName).Collection(collectionName)
 	filter := bson.M{criteria: bson.M{"$in": values}}
-	users := []bson.M{}
+	docs := []bson.M{}
 
-	opts := options.Find().SetSort(bson.D{{"CreatedAt", 1}}).SetProjection(bson.M{"password": 0})
+	opts := options.Find().SetSort(bson.D{{Key: "CreatedAt", Value: 1}}).SetProjection(bson.M{"password": 0})
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
 		return nil, err
 	}
-	if err = cursor.All(context.TODO(), &users); err != nil {
+	if err = cursor.All(context.TODO(), &docs); err != nil {
 		return nil, err
 	}
-	return users, nil
+	return docs, nil
 }

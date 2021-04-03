@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
+var (
 	//DbName stands for the entire DB name
 	DbName = "properly"
 )
@@ -36,6 +36,10 @@ func newDB() *DB {
 	mongourl := os.Getenv("MONGO_URL")
 	if len(mongourl) <= 0 {
 		mongourl = "mongodb://localhost:27017/"
+	}
+	dbName := os.Getenv("DBNAME")
+	if len(dbName) > 0 {
+		DbName = dbName
 	}
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongourl))
 	if err != nil {
