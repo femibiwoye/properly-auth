@@ -80,6 +80,10 @@ func TestProperly(t *testing.T) {
 	testAddInspection(t, http.StatusCreated)
 	testUpdateInspection(t, http.StatusOK)
 	testRemoveInspection(t, http.StatusOK)
+	testAddComplaints(t, http.StatusCreated)
+	testAddComplaints(t, http.StatusCreated)
+	testListComplaints(t, http.StatusOK)
+	testUpdateComplaints(t, http.StatusOK)
 }
 
 func cleanUpDb() {

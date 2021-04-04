@@ -261,7 +261,7 @@ func RemoveAttachment(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /manager/inspection/schedule/ [put]
+// @Router /manager/inspection/schedule/ [post]
 // @Security ApiKeyAuth
 func ScheduleInspection(c *gin.Context) {
 	data := models.InspectionModel{}
@@ -296,7 +296,7 @@ func ScheduleInspection(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /manager/inspection/update/ [post]
+// @Router /manager/inspection/update/ [put]
 // @Security ApiKeyAuth
 func UpdateInspection(c *gin.Context) {
 

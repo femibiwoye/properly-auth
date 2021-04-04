@@ -17,7 +17,7 @@ import (
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /tenant/property/add/ [put]
+// @Router /tenant/property/add/ [post]
 // @Security ApiKeyAuth
 func AddTenantToProperty(c *gin.Context) {
 	controllers.AugmentProperty(c, models.Tenant, "add", func(m map[string]string, id string) {
@@ -36,7 +36,7 @@ func AddTenantToProperty(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /tenant/property/remove/ [put]
+// @Router /tenant/property/remove/ [delete]
 // @Security ApiKeyAuth
 func RemoveTenantFromProperty(c *gin.Context) {
 	controllers.AugmentProperty(c, models.Tenant, "remove", func(m map[string]string, id string) {

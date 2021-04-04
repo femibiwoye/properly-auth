@@ -11,7 +11,7 @@ import (
 
 func testAddLandlord(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/landlord/property/add/?platform=mobile", nil)
+	req, err := http.NewRequest("POST", "/v1/landlord/property/add/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
@@ -35,7 +35,7 @@ func testAddLandlord(t *testing.T, ExpectedCode int) {
 
 func testRemoveLandlord(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/landlord/property/remove/?platform=mobile", nil)
+	req, err := http.NewRequest("DELETE", "/v1/landlord/property/remove/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
