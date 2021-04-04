@@ -11,6 +11,7 @@ var (
 	documents    = []string{}
 	images       = []string{}
 	inspectionID = []string{}
+	complaitsID  = []string{}
 )
 
 type mockReadCloser struct {

@@ -34,7 +34,7 @@ var doc = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/landlord/property/add/": {
-            "put": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -146,7 +146,7 @@ var doc = `{
             }
         },
         "/landlord/property/remove/": {
-            "put": {
+            "delete": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -170,6 +170,62 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.AddLandlord"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/list/complaint/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "endpoint to list all the complaints made on a property",
+                "parameters": [
+                    {
+                        "description": "requestdetails",
+                        "name": "details",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ListType"
                         }
                     }
                 ],
@@ -227,6 +283,62 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.LoginData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/make/complaints/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "endpoint to add a landloard to a property. Only manager are capable of adding landlord property",
+                "parameters": [
+                    {
+                        "description": "requestdetails",
+                        "name": "details",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ComplaintsModel"
                         }
                     }
                 ],
@@ -371,7 +483,7 @@ var doc = `{
             }
         },
         "/manager/inspection/schedule/": {
-            "put": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -427,7 +539,7 @@ var doc = `{
             }
         },
         "/manager/inspection/update/": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -779,7 +891,7 @@ var doc = `{
             }
         },
         "/tenant/property/add/": {
-            "put": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -891,7 +1003,7 @@ var doc = `{
             }
         },
         "/tenant/property/remove/": {
-            "put": {
+            "delete": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -907,6 +1019,62 @@ var doc = `{
                     "accounts"
                 ],
                 "summary": "endpoint to remove a tanent from a property. Only manager are capable of adding landlord property",
+                "parameters": [
+                    {
+                        "description": "useraccountdetails",
+                        "name": "details",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddLandlord"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/update/complaint/": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "endpoint to remove a landloard from a property. Only manager are capable of adding landlord property",
                 "parameters": [
                     {
                         "description": "useraccountdetails",
@@ -1306,6 +1474,20 @@ var doc = `{
                     "type": "string"
                 },
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ComplaintsModel": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "integer"
+                },
+                "propertyID": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 }
             }

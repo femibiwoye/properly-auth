@@ -7,17 +7,19 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
-func testAddTenant(t *testing.T, ExpectedCode int) {
+func testAddComplaints(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("POST", "/v1/tenant/property/add/?platform=mobile", nil)
+	req, err := http.NewRequest("POST", "/v1/make/complaint/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
 	data := make(map[string]interface{})
 	data["propertyid"] = propertyID[0]
-	data["userid"] = getIdFromToken(t, tokens[2])
+	data["text"] = "inspection number 1"
+	data["date"] = time.Now().Unix()
 
 	dataByte, _ := json.Marshal(data)
 	mrc := mockReadCloser{data: dataByte}
@@ -31,17 +33,21 @@ func testAddTenant(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
+
+	result := make(map[string]interface{})
+	json.Unmarshal(responseText, &result)
+	id := result["data"].(map[string]interface{})
+	complaitsID = append(complaitsID, id["id"].(string))
 }
 
-func testRemoveTenant(t *testing.T, ExpectedCode int) {
+func testListComplaints(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("DELETE", "/v1/tenant/property/remove/?platform=mobile", nil)
+	req, err := http.NewRequest("GET", "/v1/list/complaints/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
 	data := make(map[string]interface{})
 	data["propertyid"] = propertyID[0]
-	data["userid"] = getIdFromToken(t, tokens[2])
 
 	dataByte, _ := json.Marshal(data)
 	mrc := mockReadCloser{data: dataByte}
@@ -55,16 +61,17 @@ func testRemoveTenant(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
+
 }
 
-func testListTenant(t *testing.T, ExpectedCode int) {
+func testUpdateComplaints(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("GET", "/v1/tenant/property/list/?platform=mobile", nil)
+	req, err := http.NewRequest("PUT", "/v1/update/complaint/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
 	data := make(map[string]interface{})
-	data["propertyid"] = propertyID[0]
+	data["ComplaintsID"] = complaitsID[0]
 
 	dataByte, _ := json.Marshal(data)
 	mrc := mockReadCloser{data: dataByte}
@@ -78,6 +85,4 @@ func testListTenant(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
-
-	fmt.Printf("%s %s", responseText, w.Result().Status)
 }

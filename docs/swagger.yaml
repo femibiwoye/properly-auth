@@ -23,6 +23,15 @@ definitions:
       token:
         type: string
     type: object
+  models.ComplaintsModel:
+    properties:
+      date:
+        type: integer
+      propertyID:
+        type: string
+      text:
+        type: string
+    type: object
   models.CreateProperty:
     properties:
       address:
@@ -132,7 +141,7 @@ info:
   version: "1.0"
 paths:
   /landlord/property/add/:
-    put:
+    post:
       consumes:
       - application/json
       parameters:
@@ -203,7 +212,7 @@ paths:
       tags:
       - accounts
   /landlord/property/remove/:
-    put:
+    delete:
       consumes:
       - application/json
       parameters:
@@ -236,6 +245,41 @@ paths:
       - ApiKeyAuth: []
       summary: endpoint to remove a landloard from a property. Only manager are capable
         of adding landlord property
+      tags:
+      - accounts
+  /list/complaint/:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: requestdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.ListType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to list all the complaints made on a property
       tags:
       - accounts
   /login/:
@@ -272,6 +316,42 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: SignIn is used to login a user
+      tags:
+      - accounts
+  /make/complaints/:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: requestdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.ComplaintsModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to add a landloard to a property. Only manager are capable
+        of adding landlord property
       tags:
       - accounts
   /manager/create/property/:
@@ -346,7 +426,7 @@ paths:
       tags:
       - accounts
   /manager/inspection/schedule/:
-    put:
+    post:
       consumes:
       - application/json
       parameters:
@@ -381,7 +461,7 @@ paths:
       tags:
       - accounts
   /manager/inspection/update/:
-    post:
+    put:
       consumes:
       - application/json
       parameters:
@@ -604,7 +684,7 @@ paths:
             $ref: '#/definitions/models.HTTPRes'
       summary: is the endpoint for user signup.
   /tenant/property/add/:
-    put:
+    post:
       consumes:
       - application/json
       parameters:
@@ -675,7 +755,7 @@ paths:
       tags:
       - accounts
   /tenant/property/remove/:
-    put:
+    delete:
       consumes:
       - application/json
       parameters:
@@ -707,6 +787,42 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: endpoint to remove a tanent from a property. Only manager are capable
+        of adding landlord property
+      tags:
+      - accounts
+  /update/complaint/:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: useraccountdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddLandlord'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to remove a landloard from a property. Only manager are capable
         of adding landlord property
       tags:
       - accounts
