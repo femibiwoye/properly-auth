@@ -157,7 +157,6 @@ func UpdatePropertyRoute(c *gin.Context) {
 	}
 
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("Property have updated"), response)
-
 }
 
 // RemoveAttachment godoc
@@ -395,4 +394,34 @@ func DeleteInspection(c *gin.Context) {
 	}
 
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("Inspection Deleted"), struct{}{})
+}
+
+
+// ListProperties godoc
+// @Summary endpoint to list all the property created by user
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /list/properties/ [get]
+// @Security ApiKeyAuth
+func ListProperties(c *gin.Context) {
+	user, _, ok := controllers.CheckUser(c, true)
+	if !ok {
+		return
+	}
+
+	fmt.Println(user.ID)
+	properties, err := models.FetchDocByCriterionMultiple("createdby", models.PropertyCollectionName, []string{user.ID})
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of  properties"), properties)
+
 }
