@@ -84,6 +84,8 @@ func TestProperly(t *testing.T) {
 	testAddComplaints(t, http.StatusCreated)
 	testListComplaints(t, http.StatusOK)
 	testUpdateComplaints(t, http.StatusOK)
+	testListProperty(t, http.StatusOK)
+	//TODO test list inspection
 }
 
 func cleanUpDb() {

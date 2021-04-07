@@ -282,6 +282,34 @@ paths:
       summary: endpoint to list all the complaints made on a property
       tags:
       - accounts
+  /list/inspection/:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to list all the Inspection created by user
+      tags:
+      - accounts
   /list/properties/:
     get:
       consumes:
