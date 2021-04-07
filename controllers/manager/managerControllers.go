@@ -425,3 +425,33 @@ func ListProperties(c *gin.Context) {
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of  properties"), properties)
 
 }
+
+// ListInspection godoc
+// @Summary endpoint to list all the Inspection created by user
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /list/inspection/ [get]
+// @Security ApiKeyAuth
+func ListInspection(c *gin.Context) {
+	user, _, ok := controllers.CheckUser(c, true)
+	if !ok {
+		return
+	}
+
+	fmt.Println(user.ID)
+	properties, err := models.FetchDocByCriterionMultiple("createdby", models.InspectionCollectionaName, []string{user.ID})
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of  inspection"), properties)
+
+}
+

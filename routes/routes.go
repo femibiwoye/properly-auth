@@ -60,6 +60,7 @@ func Router() *gin.Engine {
 	manager.PUT("/inspection/update/", managerRoutes.UpdateInspection)
 	manager.DELETE("/inspection/delete/", managerRoutes.DeleteInspection)
 	manager.GET("/list/properties/", managerRoutes.ListProperties)
+	manager.GET("/list/inspection/", managerRoutes.ListInspection)
 
 
 	landlord := v1.Group("/landlord")

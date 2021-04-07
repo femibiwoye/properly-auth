@@ -154,7 +154,6 @@ func testRemoveAttachment(t *testing.T, ExpectedCode int, typeOf string) {
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
 
-	fmt.Printf("%s %s", responseText, w.Result().Status)
 }
 
 func testAddInspection(t *testing.T, ExpectedCode int) {
@@ -222,6 +221,23 @@ func testUpdateInspection(t *testing.T, ExpectedCode int) {
 	dataByte, _ := json.Marshal(data)
 	mrc := mockReadCloser{data: dataByte}
 	req.Body = mrc
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	router.ServeHTTP(w, req)
+	responseText, err := ioutil.ReadAll(w.Body)
+	if w.Code != ExpectedCode {
+		fmt.Printf("%s %s", responseText, w.Result().Status)
+		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
+	}
+}
+
+func testListProperty(t *testing.T, ExpectedCode int) {
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/v1/manager/list/properties/?platform=mobile", nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
+
 	if err != nil {
 		t.Fatalf("%v occured", err)
 	}
