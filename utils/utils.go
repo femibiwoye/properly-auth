@@ -146,6 +146,32 @@ func GeneratePUMCCode(size int) string {
 	return result
 }
 
+//GenerateRandom random chars
+func GenerateRandom(size int) string {
+	if len(os.Getenv("TESTING")) > 0 {
+		return "properly"
+	}
+	b := make([]byte, size)
+	rand.Read(b)
+	result := ""
+	for i := 0; i < size; i++ {
+		curValue := b[i]
+		for curValue < 48 || curValue > 57 && curValue < 65 || curValue > 90 && curValue < 97 || curValue > 122 {
+			if curValue < 48 {
+				curValue += 5
+			}
+			if curValue > 57 {
+				curValue += 8
+			}
+			if curValue > 122 {
+				curValue -= 5
+			}
+		}
+		result += string(curValue)
+	}
+	return result
+}
+
 //SendMail use to authenticate user
 func SendMail(emailRecipent, subject, body string) error {
 	if os.Getenv("TESTING") == "TESTING" {
@@ -191,6 +217,10 @@ func MissingDataResponse(dataModel interface{}) (map[string][]string, error) {
 			response[i] = []string{fmt.Sprintf("%s cannot be blank.", i)}
 		}
 	}
+	for k, v := range response {
+		delete(response, k)
+		response[strings.ToLower(k)] = []string{strings.ToLower(v[0])}
+	}
 	return response, nil
 }
 
@@ -198,4 +228,10 @@ func RemoveFromArray(s []string, index int) []string {
 	s[index] = s[len(s)-1]
 	s = s[:len(s)-1]
 	return s
+}
+
+func PrintSomeThing(thing ...interface{}) {
+	fmt.Println()
+	fmt.Println(thing...)
+	fmt.Println()
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	struct2map "github.com/haibeey/struct2Map"
 	"net/http"
-	"os"
+	"properlyauth/controllers"
 	"properlyauth/models"
 	"properlyauth/utils"
 	"strings"
@@ -13,7 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/mitchellh/mapstructure"
-	"properlyauth/controllers"
 )
 
 // CreateProperty godoc
@@ -50,9 +49,9 @@ func CreateProperty(c *gin.Context) {
 		return
 	}
 
-	images, err := controllers.HandleMediaUploads(c, "images", form)
+	images, err := controllers.HandleMediaUploads(c, "images",[]string{"image/jpeg","image/png"}, form)
 	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Image type not accepted"), err.Error())
 		return
 	}
 
@@ -61,9 +60,11 @@ func CreateProperty(c *gin.Context) {
 		return
 	}
 
-	documents, err := controllers.HandleMediaUploads(c, "documents", form)
+	documents, err := controllers.HandleMediaUploads(c, "documents",[]string{
+		"application/msword","application/pdf","application/zip"},
+		 form)
 	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("document type doesn't match"), err.Error())
 		return
 	}
 
@@ -73,6 +74,7 @@ func CreateProperty(c *gin.Context) {
 	property.Address = data.Address
 	property.Name = data.Name
 	property.Type = data.Type
+	property.Forms = []string{}
 	property.Landlords = make(map[string]string)
 	property.Tenants = make(map[string]string)
 	property.Vendors = make(map[string]string)
@@ -180,7 +182,6 @@ func RemoveAttachment(c *gin.Context) {
 
 	data := models.RemoveAttachmentModel{}
 	c.ShouldBindJSON(&data)
-
 	errorResponse, err := utils.MissingDataResponse(data)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
@@ -209,19 +210,21 @@ func RemoveAttachment(c *gin.Context) {
 	}
 	updated := false
 	if strings.Trim(data.AttachmentType, " ") == "documents" {
+		removed := 0
 		for i, doc := range property.Documents {
 			if doc == data.AttachmentName {
-				property.Documents = utils.RemoveFromArray(property.Documents, i)
-				os.RemoveAll(fmt.Sprintf("%spublic/media/%s", os.Getenv("ROOTDIR"), data.AttachmentName))
+				property.Documents = utils.RemoveFromArray(property.Documents, i-removed)
+				removed++
 				updated = true
 			}
 		}
 
 	} else if strings.Trim(data.AttachmentType, " ") == "images" {
+		removed := 0
 		for i, img := range property.Images {
 			if img == data.AttachmentName {
-				property.Images = utils.RemoveFromArray(property.Images, i)
-				os.RemoveAll(fmt.Sprintf("%spublic/media/%s", os.Getenv("ROOTDIR"), data.AttachmentName))
+				property.Images = utils.RemoveFromArray(property.Images, i-removed)
+				removed++
 				updated = true
 			}
 		}
@@ -396,7 +399,6 @@ func DeleteInspection(c *gin.Context) {
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("Inspection Deleted"), struct{}{})
 }
 
-
 // ListProperties godoc
 // @Summary endpoint to list all the property created by user
 // @Description
@@ -444,7 +446,6 @@ func ListInspection(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(user.ID)
 	properties, err := models.FetchDocByCriterionMultiple("createdby", models.InspectionCollectionaName, []string{user.ID})
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
@@ -455,3 +456,67 @@ func ListInspection(c *gin.Context) {
 
 }
 
+// UploadAgreementForm godoc
+// @Summary endpoint is used to create a new form for other user
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Produce  json
+// @Param  details models.ListType true "details"
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /upload/upload/form/ [post]
+// @Security ApiKeyAuth
+func UploadAgreementForm(c *gin.Context) {
+	_, _, ok := controllers.CheckUser(c, true)
+	if !ok {
+		return
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("I have no idea what is happening"), err)
+		return
+	}
+	data := models.ListType{
+		PropertyID:    strings.Join(form.Value["propertyid"], "\n"),
+	}
+
+	errorResponse, err := utils.MissingDataResponse(data)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+
+	propertyM, _ := models.FetchDocByCriterion("id", data.PropertyID, models.PropertyCollectionName)
+	if propertyM == nil {
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Property not found"), errorResponse)
+		return
+	}
+	property, err := models.ToPropertyFromM(propertyM)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		return
+	}
+
+	forms, err := controllers.HandleMediaUploads(c,
+			 "form",
+			[]string{"application/msword","application/pdf","application/zip"},
+			 form)
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, err, struct{}{})
+		return
+	}
+
+	property.Forms = append(property.Forms, forms[0])
+	err = controllers.UpdateData(property, models.PropertyCollectionName)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, property)
+		return
+	}
+
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Form Uploaded"), struct{}{})
+
+}
