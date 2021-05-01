@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"properlyauth/models"
 	"properlyauth/utils"
 	"strings"
@@ -486,22 +485,21 @@ func UpdateProfileImage(c *gin.Context) {
 		models.NewResponse(c, http.StatusBadRequest, err, struct{ Image []string }{Image: []string{"image file error"}})
 		return
 	}
+	defer file.Close()
 	buff := make([]byte, 512)
 	_, err = file.Read(buff)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return
 	}
-	rootDir := os.Getenv("ROOTDIR")
-	filename := fmt.Sprintf("%d%s", time.Now().UnixNano(), filepath.Base(fileHeader.Filename))
 	filetype := http.DetectContentType(buff)
 	if filetype != "image/jpeg" && filetype != "image/png" {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("The provided file format is not allowed. Please upload a JPEG or PNG image"), struct{}{})
 		return
 	}
-	err = c.SaveUploadedFile(fileHeader, fmt.Sprintf("%s/public/media/%s", rootDir, filename))
+	filename, err := HandleMediaUpload(c, fileHeader)
 	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("error uploading file"), err.Error())
 		return
 	}
 	userFetch.ProfileImageURL = filename

@@ -18,6 +18,7 @@ type Property struct {
 	Address   string            `json:"address"`
 	Images    []string          `json:"images"`
 	Documents []string          `json:"documents"`
+	Forms     []string          `json:"forms"`
 	Landlords map[string]string `json:"landlord"`
 	Tenants   map[string]string `json:"tenants"`
 	Vendors   map[string]string `json:"vendors"`

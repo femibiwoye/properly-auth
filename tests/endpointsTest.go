@@ -191,7 +191,7 @@ func testChangeUserProfile(t *testing.T, ExpectedCode int) {
 	}
 }
 
-func testUploadPost(t *testing.T, ExpectedCode int) {
+func testUpdateProfile(t *testing.T, ExpectedCode int) {
 	file, err := os.Open("image.jpg")
 
 	if err != nil {

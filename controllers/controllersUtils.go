@@ -9,10 +9,13 @@ import (
 	"properlyauth/models"
 	"properlyauth/utils"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -41,24 +44,69 @@ func UpdateData(data models.ProperlyDocModel, collectionName string) error {
 }
 
 //HandleMediaUploads helper function to upload media files
-func HandleMediaUploads(c *gin.Context, nameOf string, form *multipart.Form) ([]string, error) {
+func HandleMediaUploads(c *gin.Context, nameOf string, acceptableDocType []string,form *multipart.Form) ([]string, error) {
 	files := form.File[nameOf]
 	names := []string{}
-	rootDir := os.Getenv("ROOTDIR")
 	errors := []error{}
-	for _, file := range files {
-		filename := fmt.Sprintf("%d%s", time.Now().UnixNano(), filepath.Base(file.Filename))
-		err := c.SaveUploadedFile(file, fmt.Sprintf("%s/public/media/%s", rootDir, filename))
+	s, err := session.NewSession(&aws.Config{
+		Region: aws.String("eu-west-2"),
+		Credentials: credentials.NewStaticCredentials(
+			os.Getenv("AWS_S3_KEY"),
+			os.Getenv("AWS_S3_SECRET"),
+			""),
+	})
+	if err != nil {
+		return names, err
+	}
+	for _, fileHeader := range files {
+		file, err := fileHeader.Open()
 		if err != nil {
 			errors = append(errors, err)
-			continue
 		}
+		buff := make([]byte, 512)
+		_, err = file.Read(buff)
+		if err != nil {
+			errors = append(errors, err)
+		}
+		filetype := http.DetectContentType(buff)
+		fileTypeGood:= false
+		for _,docType := range acceptableDocType{
+			if filetype==docType{
+				fileTypeGood = true
+			}
+		}
+		if !fileTypeGood {
+			errors = append(errors, fmt.Errorf("Document type not accepted"))
+		}
+		filename, err := UploadFileToS3(s, file, fileHeader)
+		defer file.Close()
 		names = append(names, filename)
 	}
 	if len(errors) > 0 {
 		return names, errors[0]
 	}
 	return names, nil
+}
+
+//HandleMediaUpload helper function to upload media file
+func HandleMediaUpload(c *gin.Context, fileHeader *multipart.FileHeader) (string, error) {
+	var filename string
+	var err error
+	s, err := session.NewSession(&aws.Config{
+		Region: aws.String("eu-west-2"),
+		Credentials: credentials.NewStaticCredentials(
+			os.Getenv("AWS_S3_KEY"),
+			os.Getenv("AWS_S3_SECRET"),
+			""),
+	})
+	if err != nil {
+		return filename, err
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		return filename, err
+	}
+	return UploadFileToS3(s, file, fileHeader)
 }
 
 //CheckUser helper function to validate a user and optional check if he is manager
@@ -261,4 +309,22 @@ func ErrorReponses(c *gin.Context, data interface{}, api string) (string, bool) 
 		return platform, true
 	}
 	return platform, false
+}
+
+// UploadFileToS3 saves a file to aws bucket and returns the url to the file and an error if there's any
+func UploadFileToS3(s *session.Session, file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+	uploader := s3manager.NewUploader(s)
+	tempFileName := "users/" + utils.GenerateRandom(10) + filepath.Ext(fileHeader.Filename)
+	_, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String("properlyng"),
+		ACL:    aws.String("public-read"),
+		Key:    aws.String(tempFileName),
+		Body:   file,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return "https://properlyng.s3-eu-west-2.amazonaws.com/" + tempFileName, err
 }

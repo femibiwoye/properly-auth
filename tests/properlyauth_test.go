@@ -66,7 +66,7 @@ func TestProperly(t *testing.T) {
 	testResetPassword(t, http.StatusOK, "abrahamakerele38@gmail.com", "mobile")
 	testChangePasswordByToken(t, http.StatusOK, "abrahamakerele38@gmail.com", "newpassword", "111111")
 	testChangeUserProfile(t, http.StatusOK)
-	testUploadPost(t, http.StatusOK)
+	testUpdateProfile(t, http.StatusOK)
 	testCreateProperty(t, http.StatusCreated)
 	testUpdateProperty(t, http.StatusOK)
 	testAddLandlord(t, http.StatusOK)
@@ -85,7 +85,9 @@ func TestProperly(t *testing.T) {
 	testListComplaints(t, http.StatusOK)
 	testUpdateComplaints(t, http.StatusOK)
 	testListProperty(t, http.StatusOK)
-	//TODO test list inspection
+	testListInspection(t, http.StatusOK)
+
+	//testUploadForm(t,http.StatusOK) fix this test
 }
 
 func cleanUpDb() {

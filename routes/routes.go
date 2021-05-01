@@ -61,7 +61,7 @@ func Router() *gin.Engine {
 	manager.DELETE("/inspection/delete/", managerRoutes.DeleteInspection)
 	manager.GET("/list/properties/", managerRoutes.ListProperties)
 	manager.GET("/list/inspection/", managerRoutes.ListInspection)
-
+	manager.POST("/upload/form/", managerRoutes.UploadAgreementForm)
 
 	landlord := v1.Group("/landlord")
 	landlord.POST("/property/add/", managerRoutes.AddLandlordToProperty)

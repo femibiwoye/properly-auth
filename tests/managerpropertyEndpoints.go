@@ -63,6 +63,21 @@ func testCreateProperty(t *testing.T, ExpectedCode int) {
 	}
 	file.Close()
 
+	fileDoc, err := os.Open("TESTTEST.docx")
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+
+	fileContentsDoc, err := ioutil.ReadAll(fileDoc)
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	fiDoc, err := fileDoc.Stat()
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	file.Close()
+
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 
@@ -85,11 +100,11 @@ func testCreateProperty(t *testing.T, ExpectedCode int) {
 
 	//upload 2 docs
 	for i := 0; i <= 1; i++ {
-		part, err := writer.CreateFormFile("documents", fmt.Sprintf("%d%s", i, fi.Name()))
+		part, err := writer.CreateFormFile("documents", fmt.Sprintf("%d%s", i, fiDoc.Name()))
 		if err != nil {
 			t.Fatalf("%v occured", err)
 		}
-		part.Write(fileContents)
+		part.Write(fileContentsDoc)
 	}
 
 	err = writer.Close()
@@ -134,12 +149,12 @@ func testRemoveAttachment(t *testing.T, ExpectedCode int, typeOf string) {
 	data := make(map[string]interface{})
 	data["propertyid"] = propertyID[0]
 	if typeOf == "images" {
-		data["AttachmentName"] = images[0]
+		data["attachmentname"] = images[0]
 	} else {
-		data["AttachmentName"] = documents[0]
+		data["attachmentname"] = documents[0]
 	}
 
-	data["AttachmentType"] = typeOf
+	data["attachmenttype"] = typeOf
 
 	dataByte, _ := json.Marshal(data)
 	mrc := mockReadCloser{data: dataByte}
@@ -243,6 +258,85 @@ func testListProperty(t *testing.T, ExpectedCode int) {
 	}
 	router.ServeHTTP(w, req)
 	responseText, err := ioutil.ReadAll(w.Body)
+	if w.Code != ExpectedCode {
+		fmt.Printf("%s %s", responseText, w.Result().Status)
+		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
+	}
+}
+
+
+func testListInspection(t *testing.T, ExpectedCode int) {
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/v1/manager/list/inspection/?platform=mobile", nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
+
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	router.ServeHTTP(w, req)
+	responseText, err := ioutil.ReadAll(w.Body)
+	if w.Code != ExpectedCode {
+		fmt.Printf("%s %s", responseText, w.Result().Status)
+		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
+	}
+}
+
+func testUploadForm(t *testing.T, ExpectedCode int) {
+	fileDoc, err := os.Open("TESTTEST.docx")
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+
+	fileContentsDoc, err := ioutil.ReadAll(fileDoc)
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	fiDoc, err := fileDoc.Stat()
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	fileDoc.Close()
+
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+
+	data := make(map[string]interface{})
+	data["propertyid"] = propertyID[0]
+
+
+	for key, val := range data {
+		_ = writer.WriteField(key, val.(string))
+	}
+
+	for i := 0; i < 1; i++ {
+		part, err := writer.CreateFormFile("documents", fmt.Sprintf("%d%s", i, fiDoc.Name()))
+		if err != nil {
+			t.Fatalf("%v occured", err)
+		}
+		part.Write(fileContentsDoc)
+	}
+
+	err = writer.Close()
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("POST", "/v1/manager/upload/form/?platform=mobile", nil)
+
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
+	router.ServeHTTP(w, req)
+
+	responseText, err := ioutil.ReadAll(w.Body)
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
 	if w.Code != ExpectedCode {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
