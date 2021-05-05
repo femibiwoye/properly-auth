@@ -23,22 +23,50 @@ func getIdFromToken(t *testing.T, token string) string {
 }
 
 func testUpdateProperty(t *testing.T, ExpectedCode int) {
+	file, err := os.Open("image.jpg")
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+
+	fileContents, err := ioutil.ReadAll(file)
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	fi, err := file.Stat()
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	file.Close()
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("PUT", "/v1/manager/update/property/?platform=mobile", nil)
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
 	data := make(map[string]interface{})
 	data["id"] = propertyID[0]
 	data["name"] = "Akerele's house"
 	data["type"] = "residential"
 
-	dataByte, _ := json.Marshal(data)
-	mrc := mockReadCloser{data: dataByte}
-	req.Body = mrc
+	for key, val := range data {
+		_ = writer.WriteField(key, val.(string))
+	}
+	
+	for i := 0; i < 1; i++ {
+		part, err := writer.CreateFormFile("images", fmt.Sprintf("%d%s", i, fi.Name()))
+		if err != nil {
+			t.Fatalf("%v occured", err)
+		}
+		part.Write(fileContents)
+	}
+
+	err = writer.Close()
 	if err != nil {
 		t.Fatalf("%v occured", err)
 	}
+
+	req, err := http.NewRequest("PUT", "/v1/manager/update/property/?platform=mobile", body)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 	router.ServeHTTP(w, req)
 	responseText, err := ioutil.ReadAll(w.Body)
 	if w.Code != ExpectedCode {
@@ -310,7 +338,7 @@ func testUploadForm(t *testing.T, ExpectedCode int) {
 	}
 
 	for i := 0; i < 1; i++ {
-		part, err := writer.CreateFormFile("documents", fmt.Sprintf("%d%s", i, fiDoc.Name()))
+		part, err := writer.CreateFormFile("form", fmt.Sprintf("%d%s", i, fiDoc.Name()))
 		if err != nil {
 			t.Fatalf("%v occured", err)
 		}
@@ -323,7 +351,7 @@ func testUploadForm(t *testing.T, ExpectedCode int) {
 	}
 
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("POST", "/v1/manager/upload/form/?platform=mobile", nil)
+	req, err := http.NewRequest("POST", "/v1/manager/upload/form/?platform=mobile", body)
 
 	if err != nil {
 		t.Fatalf("%v occured", err)
@@ -341,4 +369,5 @@ func testUploadForm(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
+	fmt.Printf("%s %s", responseText, w.Result().Status)
 }

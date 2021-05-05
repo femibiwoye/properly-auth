@@ -38,7 +38,6 @@ func CreateProperty(c *gin.Context) {
 		models.NewResponse(c, http.StatusBadRequest, err, struct{}{})
 		return
 	}
-
 	data := models.CreateProperty{
 		Name:    strings.Join(form.Value["name"], "\n"),
 		Type:    strings.Join(form.Value["type"], "\n"),
@@ -109,8 +108,17 @@ func UpdatePropertyRoute(c *gin.Context) {
 		return
 	}
 
-	data := models.UpdatePropertyModel{}
-	c.ShouldBindJSON(&data)
+	form, err := c.MultipartForm()
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, err, "brah")
+		return
+	}
+	data := models.UpdatePropertyModel{
+		Name:    strings.Join(form.Value["name"], "\n"),
+		Type:    strings.Join(form.Value["type"], "\n"),
+		Address: strings.Join(form.Value["address"], "\n"),
+		ID: strings.Join(form.Value["id"], "\n"),
+	}
 
 	errorResponse, err := utils.MissingDataResponse(data)
 	if err != nil {
@@ -144,21 +152,37 @@ func UpdatePropertyRoute(c *gin.Context) {
 			response[key] = []string{fmt.Sprintf("%s has been updated to %s", key, value)}
 		}
 	}
-
 	if len(response) <= 0 {
 		models.NewResponse(c, http.StatusOK, fmt.Errorf("Nothing was updated"), response)
 		return
 	}
+
+	images, err := controllers.HandleMediaUploads(c, "images",[]string{"image/jpeg","image/png"}, form)
+	documents, err := controllers.HandleMediaUploads(c, "documents",[]string{
+		"application/msword","application/pdf","application/zip"},
+		 form)
+
 	data.ID = property.ID
-	mapstructure.Decode(mapToUpdate, property)
+	err = mapstructure.Decode(mapToUpdate, property)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error converting property"), err)
+		return
+	}
 	property.ID = data.ID
+	if len(images)>0{
+		property.Images = images
+	}
+	if len(documents)>0{
+		property.Documents = documents
+	}
+
 	err = controllers.UpdateData(property, models.PropertyCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, property)
 		return
 	}
 
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("Property have updated"), response)
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Property have been updated"), response)
 }
 
 // RemoveAttachment godoc
@@ -301,7 +325,6 @@ func ScheduleInspection(c *gin.Context) {
 // @Router /manager/inspection/update/ [put]
 // @Security ApiKeyAuth
 func UpdateInspection(c *gin.Context) {
-
 	_, _, ok := controllers.CheckUser(c, true)
 	if !ok {
 		return
@@ -348,7 +371,12 @@ func UpdateInspection(c *gin.Context) {
 		return
 	}
 
-	mapstructure.Decode(mapToUpdate, inspection)
+	err = mapstructure.Decode(mapToUpdate, inspection)
+	if err!=nil{
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
 	if err := controllers.UpdateData(inspection, models.InspectionCollectionaName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
@@ -477,7 +505,7 @@ func UploadAgreementForm(c *gin.Context) {
 
 	form, err := c.MultipartForm()
 	if err != nil {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("I have no idea what is happening"), err)
+		models.NewResponse(c, http.StatusBadRequest, err, struct{}{})
 		return
 	}
 	data := models.ListType{
@@ -489,7 +517,6 @@ func UploadAgreementForm(c *gin.Context) {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
 	}
-
 	propertyM, _ := models.FetchDocByCriterion("id", data.PropertyID, models.PropertyCollectionName)
 	if propertyM == nil {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Property not found"), errorResponse)
@@ -509,14 +536,19 @@ func UploadAgreementForm(c *gin.Context) {
 		models.NewResponse(c, http.StatusBadRequest, err, struct{}{})
 		return
 	}
-
-	property.Forms = append(property.Forms, forms[0])
+	
+	if len(forms)<=0{
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("no form data uploaded"), struct{}{})
+		return
+	}
+	
+	property.Forms = append(property.Forms, forms...)
 	err = controllers.UpdateData(property, models.PropertyCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, property)
 		return
 	}
 
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("Form Uploaded"), struct{}{})
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Form Uploaded"), forms)
 
 }

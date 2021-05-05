@@ -76,7 +76,7 @@ func HandleMediaUploads(c *gin.Context, nameOf string, acceptableDocType []strin
 			}
 		}
 		if !fileTypeGood {
-			errors = append(errors, fmt.Errorf("Document type not accepted"))
+			errors = append(errors, fmt.Errorf("Type not accepted"))
 		}
 		filename, err := UploadFileToS3(s, file, fileHeader)
 		defer file.Close()
