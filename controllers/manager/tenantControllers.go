@@ -20,9 +20,9 @@ import (
 // @Router /tenant/property/add/ [post]
 // @Security ApiKeyAuth
 func AddTenantToProperty(c *gin.Context) {
-	// controllers.AugmentProperty(c, models.Tenant, "add", func(m map[string]string, id string) {
-	// 	m[id] = id
-	// })
+	controllers.AugmentProperty(c, models.Tenant, "add", func(m map[string]string, id string) {
+		m[id] = id
+	})
 }
 
 // RemoveTenantFromProperty godoc
