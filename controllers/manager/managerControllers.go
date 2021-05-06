@@ -380,7 +380,7 @@ func UpdateInspection(c *gin.Context) {
 		return
 	}
 
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("Inspection Updated"), response)
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Inspection Updated"), inspection)
 }
 
 // ScheduleInspection godoc
