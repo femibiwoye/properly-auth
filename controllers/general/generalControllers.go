@@ -55,7 +55,7 @@ func MakeComplaints(c *gin.Context) {
 // @Description
 // @Tags accounts
 // @Accept  json
-// @Param  details body models.AddLandlord true "useraccountdetails"
+// @Param  details body models.UpdateComplaintsModel true "useraccountdetails"
 // @Produce  json
 // @Success 200 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes

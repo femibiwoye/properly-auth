@@ -1,6 +1,21 @@
 basePath: /
 definitions:
-  models.AddLandlord:
+  models.AddLandLordProperty:
+    properties:
+      businessName:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      propertyID:
+        type: string
+      userID:
+        type: string
+    type: object
+  models.AugmentProperty:
     properties:
       propertyID:
         type: string
@@ -84,6 +99,15 @@ definitions:
           type: integer
         type: array
     type: object
+  models.RemoveAttachmentModel:
+    properties:
+      attachmentName:
+        type: string
+      attachmentType:
+        type: string
+      propertyID:
+        type: string
+    type: object
   models.ResetPassword:
     properties:
       email:
@@ -102,6 +126,19 @@ definitions:
       password:
         type: string
       type:
+        type: string
+    type: object
+  models.UpdateComplaintsModel:
+    properties:
+      complaintsID:
+        type: string
+      date:
+        type: integer
+      propertyID:
+        type: string
+      status:
+        type: string
+      text:
         type: string
     type: object
   models.UpdateInspectionModel:
@@ -150,7 +187,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.AddLandLordProperty'
       produces:
       - application/json
       responses:
@@ -221,7 +258,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.AugmentProperty'
       produces:
       - application/json
       responses:
@@ -561,7 +598,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.CreateProperty'
+          $ref: '#/definitions/models.RemoveAttachmentModel'
       produces:
       - application/json
       responses:
@@ -749,7 +786,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.AugmentProperty'
       produces:
       - application/json
       responses:
@@ -820,7 +857,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.AugmentProperty'
       produces:
       - application/json
       responses:
@@ -856,7 +893,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.UpdateComplaintsModel'
       produces:
       - application/json
       responses:
@@ -880,6 +917,34 @@ paths:
       - ApiKeyAuth: []
       summary: endpoint to remove a landloard from a property. Only manager are capable
         of adding landlord property
+      tags:
+      - accounts
+  /upload/upload/form/:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint is used to create a new form for other user
       tags:
       - accounts
   /user/:
@@ -1026,7 +1091,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.AugmentProperty'
       produces:
       - application/json
       responses:
@@ -1062,7 +1127,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AddLandlord'
+          $ref: '#/definitions/models.AugmentProperty'
       produces:
       - application/json
       responses:

@@ -57,7 +57,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddLandlord"
+                            "$ref": "#/definitions/models.AddLandLordProperty"
                         }
                     }
                 ],
@@ -169,7 +169,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddLandlord"
+                            "$ref": "#/definitions/models.AugmentProperty"
                         }
                     }
                 ],
@@ -708,7 +708,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateProperty"
+                            "$ref": "#/definitions/models.RemoveAttachmentModel"
                         }
                     }
                 ],
@@ -1004,7 +1004,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddLandlord"
+                            "$ref": "#/definitions/models.AugmentProperty"
                         }
                     }
                 ],
@@ -1116,7 +1116,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddLandlord"
+                            "$ref": "#/definitions/models.AugmentProperty"
                         }
                     }
                 ],
@@ -1172,10 +1172,55 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddLandlord"
+                            "$ref": "#/definitions/models.UpdateComplaintsModel"
                         }
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/upload/form/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "endpoint is used to create a new form for other user",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1442,7 +1487,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddLandlord"
+                            "$ref": "#/definitions/models.AugmentProperty"
                         }
                     }
                 ],
@@ -1498,7 +1543,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddLandlord"
+                            "$ref": "#/definitions/models.AugmentProperty"
                         }
                     }
                 ],
@@ -1532,7 +1577,30 @@ var doc = `{
         }
     },
     "definitions": {
-        "models.AddLandlord": {
+        "models.AddLandLordProperty": {
+            "type": "object",
+            "properties": {
+                "businessName": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "propertyID": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AugmentProperty": {
             "type": "object",
             "properties": {
                 "propertyID": {
@@ -1663,6 +1731,20 @@ var doc = `{
                 }
             }
         },
+        "models.RemoveAttachmentModel": {
+            "type": "object",
+            "properties": {
+                "attachmentName": {
+                    "type": "string"
+                },
+                "attachmentType": {
+                    "type": "string"
+                },
+                "propertyID": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ResetPassword": {
             "type": "object",
             "properties": {
@@ -1690,6 +1772,26 @@ var doc = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateComplaintsModel": {
+            "type": "object",
+            "properties": {
+                "complaintsID": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "integer"
+                },
+                "propertyID": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 }
             }

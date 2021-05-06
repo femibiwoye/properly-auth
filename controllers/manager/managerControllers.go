@@ -190,7 +190,7 @@ func UpdatePropertyRoute(c *gin.Context) {
 // @Description
 // @Tags accounts
 // @Accept  json
-// @Param  details body models.CreateProperty true "details"
+// @Param  details body models.RemoveAttachmentModel true "details"
 // @Produce  json
 // @Success 200 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes
@@ -488,7 +488,6 @@ func ListInspection(c *gin.Context) {
 // @Tags accounts
 // @Accept  json
 // @Produce  json
-// @Param  details models.ListType true "details"
 // @Success 200 {object} models.HTTPRes
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
