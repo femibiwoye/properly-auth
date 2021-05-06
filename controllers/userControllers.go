@@ -44,6 +44,7 @@ func SignUp(c *gin.Context) {
 	switch strings.ToLower(strings.Trim(data.Type, " ")) {
 	case "manager":
 		user.Type = models.Manager
+		user.PUMCCode = utils.GeneratePUMCCode(6)
 	case "landlord":
 		user.Type = models.Landlord
 	case "tenant":
@@ -62,7 +63,7 @@ func SignUp(c *gin.Context) {
 
 	userFound, err := models.FetchDocByCriterion("email", data.Email, models.UserCollectionName)
 	if err != nil && err != mongo.ErrNoDocuments {
-		models.NewResponse(c, http.StatusInternalServerError, err, "omo")
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
 	if userFound != nil {
@@ -75,12 +76,10 @@ func SignUp(c *gin.Context) {
 	user.LastName = data.LastName
 	user.Password = utils.SHA256Hash(data.Password)
 	user.CreatedAt = time.Now().Unix()
-	user.PUMCCode = utils.GeneratePUMCCode(6)
 	if err := models.Insert(user, models.UserCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while inserting user"), struct{}{})
 		return
 	}
-
 	token, err := utils.CreateToken(user.ID)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error creating token"), struct{}{})

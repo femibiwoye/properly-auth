@@ -2,12 +2,14 @@ package manager
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"properlyauth/controllers"
 	"properlyauth/models"
 	"properlyauth/utils"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // AddLandlordToProperty godoc
@@ -57,9 +59,23 @@ func AddLandlordToProperty(c *gin.Context) {
 	link := ""
 	if userToBeAdded == nil {
 		//send mail to user to register
+		userToBeAdded = &models.User{}
+		user.Email = data.Email
+		names := strings.Split(data.Name," ")
+		if len(names)>1{
+			user.LastName = names[1]
+		}
+		user.FirstName = names[0]
+		password := utils.GenerateRandom(10)
+		user.Password = utils.SHA256Hash(password)
+		user.PhoneNumber = data.Phone
+		if err := models.Insert(user, models.UserCollectionName); err != nil {
+			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while creating new user"), struct{}{})
+			return
+		}
 		body = fmt.Sprintf(`
 		<h1>You are being invited to join properly as a landlord</h1>
-		<p>follow this link to join %s</p>`, link)
+		<p>follow this link to join %s or use this password to login with you mail password :%s</p>`, link,password)
 
 	} else {
 		body = fmt.Sprintf(
@@ -68,17 +84,17 @@ func AddLandlordToProperty(c *gin.Context) {
 		)
 	}
 
+	userToBeAdded,err = models.GetUser("email",data.Email)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Fatal error "), struct{}{})
+		return
+	}
 	if err := utils.SendMail(data.Email, "Invitation From Peoperly", body); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return
 	}
 
-	if userToBeAdded ==nil{
-		models.NewResponse(c, http.StatusOK, fmt.Errorf("User not yet registered. An Email Invite has been sent to the person"), struct{}{})
-		return
-	}
-
-	property.Landlords[data.UserID] = data.UserID
+	property.Landlords[userToBeAdded.ID] = userToBeAdded.ID
 	if err = controllers.UpdateData(property, models.PropertyCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return

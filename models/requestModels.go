@@ -90,7 +90,6 @@ func (a *AugmentProperty) GetPropertyID() string {
 }
 
 type AddLandLordProperty struct {
-	UserID       string
 	PropertyID   string
 	Name         string
 	Email        string
@@ -99,7 +98,7 @@ type AddLandLordProperty struct {
 }
 
 func (a *AddLandLordProperty) GetUserID() string {
-	return a.UserID
+	return ""
 }
 func (a *AddLandLordProperty) GetPropertyID() string {
 	return a.PropertyID
