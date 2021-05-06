@@ -64,7 +64,6 @@ type ProfileImage struct {
 	Image []byte
 }
 
-
 type CreateProperty struct {
 	Name    string
 	Type    string
@@ -78,16 +77,31 @@ type UpdatePropertyModel struct {
 	ID      string
 }
 
-type AddLandlord struct {
+type AugmentProperty struct {
 	UserID     string
 	PropertyID string
 }
 
-func (a *AddLandlord) GetUserID() string {
+func (a *AugmentProperty) GetUserID() string {
 	return a.UserID
 }
+func (a *AugmentProperty) GetPropertyID() string {
+	return a.PropertyID
+}
 
-func (a *AddLandlord) GetPropertyID() string {
+type AddLandLordProperty struct {
+	UserID       string
+	PropertyID   string
+	Name         string
+	Email        string
+	Phone        string
+	BusinessName string
+}
+
+func (a *AddLandLordProperty) GetUserID() string {
+	return a.UserID
+}
+func (a *AddLandLordProperty) GetPropertyID() string {
 	return a.PropertyID
 }
 
@@ -107,7 +121,6 @@ type ScheduleInspectionModel struct {
 	AttachmentType string
 }
 
-
 // NewResponse example
 func NewResponse(ctx *gin.Context, status int, err error, data interface{}) {
 	er := HTTPRes{
@@ -124,4 +137,3 @@ type HTTPRes struct {
 	Message string      `json:"message" example:"status bad request"`
 	Data    interface{} `json:"data"`
 }
-

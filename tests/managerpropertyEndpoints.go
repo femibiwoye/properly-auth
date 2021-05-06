@@ -50,7 +50,7 @@ func testUpdateProperty(t *testing.T, ExpectedCode int) {
 	for key, val := range data {
 		_ = writer.WriteField(key, val.(string))
 	}
-	
+
 	for i := 0; i < 1; i++ {
 		part, err := writer.CreateFormFile("images", fmt.Sprintf("%d%s", i, fi.Name()))
 		if err != nil {
@@ -292,7 +292,6 @@ func testListProperty(t *testing.T, ExpectedCode int) {
 	}
 }
 
-
 func testListInspection(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("GET", "/v1/manager/list/inspection/?platform=mobile", nil)
@@ -331,7 +330,6 @@ func testUploadForm(t *testing.T, ExpectedCode int) {
 
 	data := make(map[string]interface{})
 	data["propertyid"] = propertyID[0]
-
 
 	for key, val := range data {
 		_ = writer.WriteField(key, val.(string))

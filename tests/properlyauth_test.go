@@ -69,7 +69,7 @@ func TestProperly(t *testing.T) {
 	testUpdateProfile(t, http.StatusOK)
 	testCreateProperty(t, http.StatusCreated)
 	testUpdateProperty(t, http.StatusOK)
-	testAddLandlord(t, http.StatusOK)
+	testAddLandlord(t, http.StatusOK,"09078918596","mab","abrahamakerele38@gmail.com")
 	testListLandLord(t, http.StatusOK)
 	testRemoveLandlord(t, http.StatusOK)
 	testAddTenant(t, http.StatusOK)
@@ -86,7 +86,7 @@ func TestProperly(t *testing.T) {
 	testUpdateComplaints(t, http.StatusOK)
 	testListProperty(t, http.StatusOK)
 	testListInspection(t, http.StatusOK)
-	testUploadForm(t,http.StatusOK)
+	testUploadForm(t, http.StatusOK)
 }
 
 func cleanUpDb() {

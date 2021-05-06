@@ -54,6 +54,14 @@ func ToComplaintsFromM(mongoM bson.M) (*Complaints, error) {
 	return i, nil
 }
 
+func GetComplaints(criteria, value string) (*Complaints, error) {
+	m, err := FetchDocByCriterion(criteria, value, ComplaintsCollectionName)
+	if err != nil {
+		return nil, err
+	}
+	return ToComplaintsFromM(m)
+}
+
 type ComplaintsModel struct {
 	PropertyID string
 	Text       string

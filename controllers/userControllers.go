@@ -92,6 +92,7 @@ func SignUp(c *gin.Context) {
 		return
 	}
 	delete(v, "Password")
+	delete(v, "password")
 	v["token"] = token
 	models.NewResponse(c, http.StatusCreated, fmt.Errorf("New User Created"), v)
 }
@@ -132,7 +133,7 @@ func ResetPassword(c *gin.Context) {
 			<p>Your password reset code is %s</p>
 		`, token)
 		if err := models.SaveToken(data.Email, token, platform); err != nil {
-			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error generating token"), nil)
+			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error generating token"), err.Error())
 			return
 		}
 	} else {
@@ -143,7 +144,7 @@ func ResetPassword(c *gin.Context) {
 		<a href="%s">Password Reset Link</a>
 		`, fmt.Sprintf("http://%s/reset/password/?token=%s&&platform=web", os.Getenv("HOST"), token))
 		if err := models.SaveToken(data.Email, token, platform); err != nil {
-			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error generating token"), nil)
+			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Error generating token"), err.Error())
 			return
 		}
 	}
@@ -328,6 +329,7 @@ func SignIn(c *gin.Context) {
 		return
 	}
 	delete(v, "Password")
+	delete(v, "password")
 	v["token"] = token
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("User signed in"), v)
 }
@@ -368,6 +370,7 @@ func UserProfile(c *gin.Context) {
 		return
 	}
 	delete(v, "Password")
+	delete(v, "password")
 
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("User profile"), v)
 }
@@ -430,7 +433,11 @@ func UpdateProfile(c *gin.Context) {
 		}
 	}
 
-	mapstructure.Decode(mapToUpdate, userFetch)
+	err = mapstructure.Decode(mapToUpdate, userFetch)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
 	err = UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)

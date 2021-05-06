@@ -48,7 +48,7 @@ func CreateProperty(c *gin.Context) {
 		return
 	}
 
-	images, err := controllers.HandleMediaUploads(c, "images",[]string{"image/jpeg","image/png"}, form)
+	images, err := controllers.HandleMediaUploads(c, "images", []string{"image/jpeg", "image/png"}, form)
 	if err != nil {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Image type not accepted"), err.Error())
 		return
@@ -59,9 +59,9 @@ func CreateProperty(c *gin.Context) {
 		return
 	}
 
-	documents, err := controllers.HandleMediaUploads(c, "documents",[]string{
-		"application/msword","application/pdf","application/zip"},
-		 form)
+	documents, err := controllers.HandleMediaUploads(c, "documents", []string{
+		"application/msword", "application/pdf", "application/zip"},
+		form)
 	if err != nil {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("document type doesn't match"), err.Error())
 		return
@@ -117,7 +117,7 @@ func UpdatePropertyRoute(c *gin.Context) {
 		Name:    strings.Join(form.Value["name"], "\n"),
 		Type:    strings.Join(form.Value["type"], "\n"),
 		Address: strings.Join(form.Value["address"], "\n"),
-		ID: strings.Join(form.Value["id"], "\n"),
+		ID:      strings.Join(form.Value["id"], "\n"),
 	}
 
 	errorResponse, err := utils.MissingDataResponse(data)
@@ -157,10 +157,10 @@ func UpdatePropertyRoute(c *gin.Context) {
 		return
 	}
 
-	images, err := controllers.HandleMediaUploads(c, "images",[]string{"image/jpeg","image/png"}, form)
-	documents, err := controllers.HandleMediaUploads(c, "documents",[]string{
-		"application/msword","application/pdf","application/zip"},
-		 form)
+	images, err := controllers.HandleMediaUploads(c, "images", []string{"image/jpeg", "image/png"}, form)
+	documents, err := controllers.HandleMediaUploads(c, "documents", []string{
+		"application/msword", "application/pdf", "application/zip"},
+		form)
 
 	data.ID = property.ID
 	err = mapstructure.Decode(mapToUpdate, property)
@@ -169,10 +169,10 @@ func UpdatePropertyRoute(c *gin.Context) {
 		return
 	}
 	property.ID = data.ID
-	if len(images)>0{
+	if len(images) > 0 {
 		property.Images = images
 	}
-	if len(documents)>0{
+	if len(documents) > 0 {
 		property.Documents = documents
 	}
 
@@ -211,12 +211,10 @@ func RemoveAttachment(c *gin.Context) {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
 	}
-
 	if len(errorResponse) > 0 {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("You provided incomplete requests details"), errorResponse)
 		return
 	}
-
 	propertyM, _ := models.FetchDocByCriterion("id", data.PropertyID, models.PropertyCollectionName)
 	if propertyM == nil {
 		_, ok := errorResponse["PropertyID"]
@@ -372,7 +370,7 @@ func UpdateInspection(c *gin.Context) {
 	}
 
 	err = mapstructure.Decode(mapToUpdate, inspection)
-	if err!=nil{
+	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
@@ -509,7 +507,7 @@ func UploadAgreementForm(c *gin.Context) {
 		return
 	}
 	data := models.ListType{
-		PropertyID:    strings.Join(form.Value["propertyid"], "\n"),
+		PropertyID: strings.Join(form.Value["propertyid"], "\n"),
 	}
 
 	errorResponse, err := utils.MissingDataResponse(data)
@@ -529,19 +527,19 @@ func UploadAgreementForm(c *gin.Context) {
 	}
 
 	forms, err := controllers.HandleMediaUploads(c,
-			 "form",
-			[]string{"application/msword","application/pdf","application/zip"},
-			 form)
+		"form",
+		[]string{"application/msword", "application/pdf", "application/zip"},
+		form)
 	if err != nil {
 		models.NewResponse(c, http.StatusBadRequest, err, struct{}{})
 		return
 	}
-	
-	if len(forms)<=0{
+
+	if len(forms) <= 0 {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("no form data uploaded"), struct{}{})
 		return
 	}
-	
+
 	property.Forms = append(property.Forms, forms...)
 	err = controllers.UpdateData(property, models.PropertyCollectionName)
 	if err != nil {

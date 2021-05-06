@@ -54,3 +54,11 @@ func ToPropertyFromM(mongoM bson.M) (*Property, error) {
 	}
 	return p, nil
 }
+
+func GetProperty(criteria, value string) (*Property, error) {
+	m, err := FetchDocByCriterion(criteria, value, PropertyCollectionName)
+	if err != nil {
+		return nil, err
+	}
+	return ToPropertyFromM(m)
+}
