@@ -65,6 +65,14 @@ func ToUserFromM(mongoM bson.M) (*User, error) {
 	return u, nil
 }
 
+func GetUser(criteria, value string) (*User, error) {
+	m, err := FetchDocByCriterion(criteria, value, UserCollectionName)
+	if err != nil {
+		return nil, err
+	}
+	return ToUserFromM(m)
+}
+
 //SaveToken saves an token  for authentication later on
 func SaveToken(key, value, platform string) error {
 	db := database.GetMongoDB()
@@ -72,7 +80,8 @@ func SaveToken(key, value, platform string) error {
 	defer database.PutDBBack(db)
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{Key: key}}
-	update := bson.D{{"$set", bson.M{"key": key, "value": value, "platform": platform, "time": time.Now().Unix()}}}
+	//update := bson.D{{"$set", bson.M{"key": key, "value": value, "platform": platform, "time": time.Now().Unix()}}}
+	update := bson.D{{"$set", bson.D{{Key: "key", Value: key}, {Key: "value", Value: value}, {Key: "platform", Value: platform}, {Key: "time", Value: time.Now().Unix()}}}}
 	collection := client.Database(database.DbName).Collection(TempTokenCollectionName)
 	_, err := collection.UpdateOne(context.TODO(), filter, update, opts)
 	return err

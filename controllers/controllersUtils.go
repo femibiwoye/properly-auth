@@ -44,7 +44,7 @@ func UpdateData(data models.ProperlyDocModel, collectionName string) error {
 }
 
 //HandleMediaUploads helper function to upload media files
-func HandleMediaUploads(c *gin.Context, nameOf string, acceptableDocType []string,form *multipart.Form) ([]string, error) {
+func HandleMediaUploads(c *gin.Context, nameOf string, acceptableDocType []string, form *multipart.Form) ([]string, error) {
 	files := form.File[nameOf]
 	names := []string{}
 	errors := []error{}
@@ -69,9 +69,9 @@ func HandleMediaUploads(c *gin.Context, nameOf string, acceptableDocType []strin
 			errors = append(errors, err)
 		}
 		filetype := http.DetectContentType(buff)
-		fileTypeGood:= false
-		for _,docType := range acceptableDocType{
-			if filetype==docType{
+		fileTypeGood := false
+		for _, docType := range acceptableDocType {
+			if filetype == docType {
 				fileTypeGood = true
 			}
 		}
@@ -149,8 +149,8 @@ func ValidateProperty(c *gin.Context,
 	typed, // use to indicate what type of operation we are operating
 	operation string) (
 	*models.Property,
-	*models.User, // The user to change it's details
-	*models.User, // The user making the request
+	*models.User, // The user to change his/her  details
+	*models.User, // The user making the request (the manager)
 	bool,
 ) {
 	user, _, ok := CheckUser(c, true)
@@ -199,7 +199,9 @@ func ValidateProperty(c *gin.Context,
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("The User to %s not found", operation), errorResponse)
 		return nil, nil, nil, false
 	}
-
+	if !checkUserID {
+		return property, nil, user, true
+	}
 	userFetch, err := models.ToUserFromM(userM)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
@@ -216,9 +218,8 @@ func ValidateProperty(c *gin.Context,
 
 //AugmentProperty helper function to change sub data of a property
 func AugmentProperty(c *gin.Context, typed, operation string, f func(map[string]string, string)) {
-	data := models.AddLandlord{}
+	data := models.AugmentProperty{}
 	property, userFetch, _, ok := ValidateProperty(c, &data, true, typed, operation)
-
 	if !ok {
 		return
 	}
@@ -241,11 +242,11 @@ func AugmentProperty(c *gin.Context, typed, operation string, f func(map[string]
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
-
-	UpdateData(property, models.PropertyCollectionName)
-
+	if err = UpdateData(property, models.PropertyCollectionName); err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("%s %s from this property", typed, operation), users)
-
 }
 
 func mapKeysToArray(m map[string]string) []string {
@@ -257,7 +258,7 @@ func mapKeysToArray(m map[string]string) []string {
 }
 
 func FetchList(c *gin.Context, typed string) {
-	data := models.AddLandlord{}
+	data := models.AugmentProperty{}
 	property, _, _, ok := ValidateProperty(c, &data, false, typed, "List")
 	if !ok {
 		return

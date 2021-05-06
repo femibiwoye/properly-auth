@@ -48,6 +48,14 @@ func ToInspectionFromM(mongoM bson.M) (*Inspection, error) {
 	return i, nil
 }
 
+func GetInspection(criteria, value string) (*Inspection, error) {
+	m, err := FetchDocByCriterion(criteria, value, InspectionCollectionaName)
+	if err != nil {
+		return nil, err
+	}
+	return ToInspectionFromM(m)
+}
+
 type InspectionModel struct {
 	userID     string
 	PropertyID string
