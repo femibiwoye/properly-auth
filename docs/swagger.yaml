@@ -12,8 +12,6 @@ definitions:
         type: string
       propertyID:
         type: string
-      userID:
-        type: string
     type: object
   models.AugmentProperty:
     properties:
