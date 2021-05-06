@@ -1594,9 +1594,6 @@ var doc = `{
                 },
                 "propertyID": {
                     "type": "string"
-                },
-                "userID": {
-                    "type": "string"
                 }
             }
         },
