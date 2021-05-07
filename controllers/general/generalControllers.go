@@ -29,7 +29,7 @@ import (
 // @Security ApiKeyAuth
 func MakeComplaints(c *gin.Context) {
 	data := models.ComplaintsModel{}
-	_, _, user, ok := controllers.ValidateProperty(c, &data, false, "make", "Complaints")
+	_, _, user, ok := controllers.ValidateProperty(c, &data, false, false,"make", "Complaints")
 	if !ok {
 		return
 	}

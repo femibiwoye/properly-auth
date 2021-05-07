@@ -146,6 +146,7 @@ func CheckUser(c *gin.Context, checkManager bool) (*models.User, string, bool) {
 func ValidateProperty(c *gin.Context,
 	data managerRequestData,
 	checkUserID bool, // used to confirm if a user id should be check in the request
+	checkManager bool,
 	typed, // use to indicate what type of operation we are operating
 	operation string) (
 	*models.Property,
@@ -153,7 +154,7 @@ func ValidateProperty(c *gin.Context,
 	*models.User, // The user making the request (the manager)
 	bool,
 ) {
-	user, _, ok := CheckUser(c, true)
+	user, _, ok := CheckUser(c, checkManager)
 	if !ok {
 		return nil, nil, nil, ok
 	}
@@ -167,10 +168,10 @@ func ValidateProperty(c *gin.Context,
 
 	// we can omit user ID for
 	if !checkUserID {
-		delete(errorResponse, "UserID")
+		delete(errorResponse, "userid")
 	}
 	if len(errorResponse) > 0 {
-		_, ok := errorResponse["UserID"]
+		_, ok := errorResponse["userid"]
 		if !ok && operation != "List" {
 			models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("You provided invalid %s property details", operation), errorResponse)
 			return nil, nil, nil, false
@@ -219,7 +220,7 @@ func ValidateProperty(c *gin.Context,
 //AugmentProperty helper function to change sub data of a property
 func AugmentProperty(c *gin.Context, typed, operation string, f func(map[string]string, string)) {
 	data := models.AugmentProperty{}
-	property, userFetch, _, ok := ValidateProperty(c, &data, true, typed, operation)
+	property, userFetch, _, ok := ValidateProperty(c, &data, true,false, typed, operation)
 	if !ok {
 		return
 	}
@@ -259,7 +260,7 @@ func mapKeysToArray(m map[string]string) []string {
 
 func FetchList(c *gin.Context, typed string) {
 	data := models.AugmentProperty{}
-	property, _, _, ok := ValidateProperty(c, &data, false, typed, "List")
+	property, _, _, ok := ValidateProperty(c, &data, false,false, typed, "List")
 	if !ok {
 		return
 	}
