@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -224,6 +225,19 @@ func MissingDataResponse(dataModel interface{}) (map[string][]string, error) {
 	return response, nil
 }
 
+func CheckDateFormat(date string) bool {
+	dateSlice := strings.Split(date, "/")
+	if len(dateSlice) != 3 {
+		return false
+	}
+	for i := 0; i < 3; i++ {
+		_, err := strconv.Atoi(dateSlice[i])
+		if err != nil {
+			return false
+		}
+	}
+	return true
+}
 func RemoveFromArray(s []string, index int) []string {
 	s[index] = s[len(s)-1]
 	s = s[:len(s)-1]

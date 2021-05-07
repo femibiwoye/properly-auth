@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func testAddLandlord(t *testing.T, ExpectedCode int,phone, businessname,email string ) {
+func testAddLandlord(t *testing.T, ExpectedCode int, phone, businessname, email string) {
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("POST", "/v1/landlord/property/add/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")

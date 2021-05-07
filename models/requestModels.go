@@ -104,6 +104,22 @@ func (a *AddLandLordProperty) GetPropertyID() string {
 	return a.PropertyID
 }
 
+type AddTenantProperty struct {
+	PropertyID    string
+	Name          string
+	RentStartDate string
+	RentEndDate   string
+	Email         string
+	Phone         string
+}
+
+func (a *AddTenantProperty) GetUserID() string {
+	return ""
+}
+func (a *AddTenantProperty) GetPropertyID() string {
+	return a.PropertyID
+}
+
 type ListType struct {
 	PropertyID string
 }

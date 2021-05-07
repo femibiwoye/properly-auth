@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"properlyauth/database"
 	"properlyauth/models"
+	"properlyauth/utils"
 	"strings"
 	"syscall"
 	"testing"
@@ -69,10 +70,10 @@ func TestProperly(t *testing.T) {
 	testUpdateProfile(t, http.StatusOK)
 	testCreateProperty(t, http.StatusCreated)
 	testUpdateProperty(t, http.StatusOK)
-	testAddLandlord(t, http.StatusOK,"09078918596","mab","abrahamakerele38@gmail.com")
+	testAddLandlord(t, http.StatusOK, "09078918596", "mab", "abraham38@gmail.com")
 	testListLandLord(t, http.StatusOK)
 	testRemoveLandlord(t, http.StatusOK)
-	testAddTenant(t, http.StatusOK)
+	testAddTenant(t, http.StatusOK, "09088918596", "mab inc", "abrahamak38@gmail.com")
 	testListTenant(t, http.StatusOK)
 	testRemoveTenant(t, http.StatusOK)
 	testRemoveAttachment(t, http.StatusOK, "images")
@@ -89,6 +90,17 @@ func TestProperly(t *testing.T) {
 	testUploadForm(t, http.StatusOK)
 }
 
+func TestUtils(t *testing.T) {
+	if utils.CheckDateFormat("") != false {
+		t.Fatal("Should have been false")
+	}
+	if utils.CheckDateFormat("9/11/2020") != true {
+		t.Fatal("Should have been false")
+	}
+	if utils.CheckDateFormat("09/-1/020") != true {
+		t.Fatal("Should have been false")
+	}
+}
 func cleanUpDb() {
 	if os.Getenv("CLEAR") == "CLEAR" {
 		client := database.GetMongoDB().GetClient()

@@ -134,7 +134,7 @@ func CheckUser(c *gin.Context, checkManager bool) (*models.User, string, bool) {
 	}
 	if checkManager {
 		if userFetch.Type != models.Manager {
-			models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Only managers can create and change properties"), userFetch)
+			models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Only managers can create and change properties"), struct{}{})
 			return nil, "", false
 		}
 	}

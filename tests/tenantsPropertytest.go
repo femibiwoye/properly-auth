@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func testAddTenant(t *testing.T, ExpectedCode int) {
+func testAddTenant(t *testing.T, ExpectedCode int, phone, businessname, email string) {
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("POST", "/v1/tenant/property/add/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
@@ -17,7 +17,12 @@ func testAddTenant(t *testing.T, ExpectedCode int) {
 
 	data := make(map[string]interface{})
 	data["propertyid"] = propertyID[0]
-	data["userid"] = getIdFromToken(t, tokens[2])
+	data["businessname"] = businessname
+	data["email"] = email
+	data["phone"] = phone
+	data["name"] = "abraham akerele"
+	data["rentenddate"] = "12/2/2022"
+	data["rentstartdate"] = "12/2/2021"
 
 	dataByte, _ := json.Marshal(data)
 	mrc := mockReadCloser{data: dataByte}

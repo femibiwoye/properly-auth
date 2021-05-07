@@ -1004,7 +1004,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AugmentProperty"
+                            "$ref": "#/definitions/models.AddTenantProperty"
                         }
                     }
                 ],
@@ -1593,6 +1593,29 @@ var doc = `{
                     "type": "string"
                 },
                 "propertyID": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AddTenantProperty": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "propertyID": {
+                    "type": "string"
+                },
+                "rentEndDate": {
+                    "type": "string"
+                },
+                "rentStartDate": {
                     "type": "string"
                 }
             }

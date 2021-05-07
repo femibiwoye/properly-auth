@@ -23,17 +23,18 @@ const (
 
 //User decribes user on properly
 type User struct {
-	Email           string `json:"email"`
-	FirstName       string `json:"firstname"`
-	LastName        string `json:"lastname"`
-	ID              string `json:"id"`
-	ProfileImageURL string `json:"profile_image_url"`
-	Dob             string `json:"dob"`
-	CreatedAt       int64  `json:"created_at"`
-	PhoneNumber     string `json:"phoneNumber"`
-	Password        string `json:"password"`
-	Type            string `json:"type"`
-	PUMCCode        string `json:"pumccode"`
+	Email           string                 `json:"email"`
+	FirstName       string                 `json:"firstname"`
+	LastName        string                 `json:"lastname"`
+	ID              string                 `json:"id"`
+	ProfileImageURL string                 `json:"profile_image_url"`
+	Dob             string                 `json:"dob"`
+	CreatedAt       int64                  `json:"created_at"`
+	PhoneNumber     string                 `json:"phoneNumber"`
+	Password        string                 `json:"password"`
+	Type            string                 `json:"type"`
+	PUMCCode        string                 `json:"pumccode"`
+	AdditionalData  map[string]interface{} `json:"additionaldata"`
 }
 
 func (u *User) getID() string {
