@@ -28,7 +28,6 @@ import (
 func AddLandlordToProperty(c *gin.Context) {
 	user, _, ok := controllers.CheckUser(c, true)
 	if !ok {
-		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Not authorize"), false)
 		return
 	}
 	data := models.AddLandLordProperty{}
@@ -59,10 +58,10 @@ func AddLandlordToProperty(c *gin.Context) {
 	link := ""
 	if userToBeAdded == nil {
 		//send mail to user to register
-		userToBeAdded = &models.User{}
+		userToBeAdded = &models.User{Type: models.Landlord}
 		user.Email = data.Email
-		names := strings.Split(data.Name," ")
-		if len(names)>1{
+		names := strings.Split(data.Name, " ")
+		if len(names) > 1 {
 			user.LastName = names[1]
 		}
 		user.FirstName = names[0]
@@ -73,18 +72,32 @@ func AddLandlordToProperty(c *gin.Context) {
 			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while creating new user"), struct{}{})
 			return
 		}
+		invite := &models.Invite{Type: models.Landlord,
+			Email: data.Email,
+			Name:  data.Name,
+			Phone: data.Phone,
+		}
+
+		if err := models.Insert(invite, models.InvitesCollectionName); err != nil {
+			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while creating new user"), struct{}{})
+			return
+		}
 		body = fmt.Sprintf(`
 		<h1>You are being invited to join properly as a landlord</h1>
-		<p>follow this link to join %s or use this password to login with you mail password :%s</p>`, link,password)
+		<p>follow this link to join <a href=%s>sign in</a> properly using the password :%s</p>`, link, password)
 
 	} else {
+		if userToBeAdded.Type != models.Landlord {
+			models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("User is not a Landlord"), user)
+			return
+		}
 		body = fmt.Sprintf(
-			`<h1>You have been Added to a property %s by %s</h1>`,
+			`<h1>You have been Added to property %s by %s</h1>`,
 			property.Name, fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 		)
 	}
 
-	userToBeAdded,err = models.GetUser("email",data.Email)
+	userToBeAdded, err = models.GetUser("email", data.Email)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Fatal error "), struct{}{})
 		return

@@ -13,6 +13,21 @@ definitions:
       propertyID:
         type: string
     type: object
+  models.AddTenantProperty:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      propertyID:
+        type: string
+      rentEndDate:
+        type: string
+      rentStartDate:
+        type: string
+    type: object
   models.AugmentProperty:
     properties:
       propertyID:
@@ -784,7 +799,7 @@ paths:
         name: details
         required: true
         schema:
-          $ref: '#/definitions/models.AugmentProperty'
+          $ref: '#/definitions/models.AddTenantProperty'
       produces:
       - application/json
       responses:
