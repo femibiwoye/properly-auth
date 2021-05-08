@@ -59,7 +59,7 @@ func DecodeJWTToken(tokenString string) (map[string]string, error) {
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("Invaliad token")
+		return nil, fmt.Errorf("Invalid Token")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
@@ -210,6 +210,12 @@ func MissingDataResponse(dataModel interface{}) (map[string][]string, error) {
 	for i, v := range value {
 		if reflect.TypeOf(v) == reflect.TypeOf(int64(0)) {
 			n := v.(int64)
+			if n == 0 {
+				response[i] = []string{fmt.Sprintf("%s cannot be blank.", i)}
+			}
+		}
+		if reflect.TypeOf(v) == reflect.TypeOf(float32(0)) {
+			n := v.(float32)
 			if n == 0 {
 				response[i] = []string{fmt.Sprintf("%s cannot be blank.", i)}
 			}

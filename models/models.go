@@ -2,10 +2,11 @@ package models
 
 import (
 	"context"
+	"properlyauth/database"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"properlyauth/database"
 )
 
 type ProperlyDocModel interface {
@@ -31,6 +32,27 @@ func Insert(doc ProperlyDocModel, collectionName string) error {
 	return err
 }
 
+//Upsert adds a doc if not present .if present update it
+func Upsert(doc ProperlyDocModel, check map[string]interface{}, collectionName string) error {
+	db := database.GetMongoDB()
+	client := db.GetClient()
+	defer database.PutDBBack(db)
+	collection := client.Database(database.DbName).Collection(collectionName)
+	s, err := primitive.ObjectIDFromHex(doc.getID())
+	if err != nil {
+		s = primitive.NewObjectID()
+	}
+	orValues := []interface{}{}
+	for k, v := range check {
+		orValues = append(orValues, bson.M{k: v})
+	}
+	filter := bson.D{{Key: "_id", Value: s}, {Key: "$or", Value: orValues}}
+	update := bson.D{{Key: "$set", Value: doc}}
+	opts := options.Update().SetUpsert(true)
+	_, err = collection.UpdateOne(context.TODO(), filter, update, opts)
+	return err
+}
+
 //Update update a doc in the database
 func Update(doc ProperlyDocModel, update interface{}, collectionName string) error {
 	db := database.GetMongoDB()
@@ -42,9 +64,7 @@ func Update(doc ProperlyDocModel, update interface{}, collectionName string) err
 		return err
 	}
 	filter := bson.M{"_id": s}
-
 	opts := options.Update().SetUpsert(false)
-
 	_, err = collection.UpdateOne(context.TODO(), filter, update, opts)
 	return err
 }
@@ -60,13 +80,11 @@ func Delete(doc ProperlyDocModel, collectionName string) error {
 		return err
 	}
 	filter := bson.M{"_id": s}
-
 	opts := options.Delete().SetCollation(&options.Collation{
 		Locale:    "en_US",
 		Strength:  1,
 		CaseLevel: false,
 	})
-
 	_, err = collection.DeleteOne(context.TODO(), filter, opts)
 	return err
 }
@@ -80,9 +98,7 @@ func FetchDocByCriterion(criteria, value, collectionName string) (bson.M, error)
 	collection := client.Database(database.DbName).Collection(collectionName)
 	filter := bson.M{criteria: value}
 	doc := bson.M{}
-
 	err := collection.FindOne(context.TODO(), filter).Decode(doc)
-
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +114,6 @@ func FetchDocByCriterionMultiple(criteria, collectionName string, values []strin
 	collection := client.Database(database.DbName).Collection(collectionName)
 	filter := bson.M{criteria: bson.M{"$in": values}}
 	docs := []bson.M{}
-
 	opts := options.Find().SetSort(bson.D{{Key: "CreatedAt", Value: 1}}).SetProjection(bson.M{"password": 0})
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {

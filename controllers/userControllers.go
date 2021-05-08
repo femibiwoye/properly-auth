@@ -235,18 +235,18 @@ func ChangePasswordFromToken(c *gin.Context) {
 
 	tokenData, err := models.FetchToken(data.Email)
 	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
 	}
 
 	if time.Now().Unix()-tokenData["time"].(int64) > 1800 {
-		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Token time is expired"), nil)
+		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Token time is expired"), false)
 		return
 	}
 	token, ok := tokenData["value"]
 
 	if !ok || token != data.Token {
-		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid Token"), nil)
+		models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Invalid Token"), false)
 		return
 	}
 	email = data.Email
@@ -254,13 +254,13 @@ func ChangePasswordFromToken(c *gin.Context) {
 
 	userM, _ := models.FetchDocByCriterion("email", email, models.UserCollectionName)
 	if userM == nil {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), nil)
+		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("User not found"), false)
 		return
 	}
 
 	userFetch, err := models.ToUserFromM(userM)
 	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
 	}
 	userFetch.Password = utils.SHA256Hash(password)
@@ -269,8 +269,11 @@ func ChangePasswordFromToken(c *gin.Context) {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
 	}
-	models.TakeOutToken(data.Email)
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("Password changed"), nil)
+	if err = models.TakeOutToken(data.Email); err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Password changed"), true)
 
 }
 

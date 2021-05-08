@@ -289,7 +289,7 @@ func RemoveAttachment(c *gin.Context) {
 // @Security ApiKeyAuth
 func ScheduleInspection(c *gin.Context) {
 	data := models.InspectionModel{}
-	_, _, user, ok := controllers.ValidateProperty(c, &data, false,false, "Schedule", "Inspection")
+	_, _, user, ok := controllers.ValidateProperty(c, &data, false, false, "Schedule", "Inspection")
 	if !ok {
 		return
 	}

@@ -35,11 +35,10 @@ func UpdateData(data models.ProperlyDocModel, collectionName string) error {
 	if err != nil {
 		return err
 	}
-	err = models.Update(data, bson.D{{Key: "$set", Value: update}}, collectionName)
+	err = models.Update(data, bson.M{"$set": update}, collectionName)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -76,7 +75,7 @@ func HandleMediaUploads(c *gin.Context, nameOf string, acceptableDocType []strin
 			}
 		}
 		if !fileTypeGood {
-			errors = append(errors, fmt.Errorf("Type not accepted"))
+			errors = append(errors, fmt.Errorf("FileType not accepted"))
 		}
 		filename, err := UploadFileToS3(s, file, fileHeader)
 		defer file.Close()
@@ -134,7 +133,7 @@ func CheckUser(c *gin.Context, checkManager bool) (*models.User, string, bool) {
 	}
 	if checkManager {
 		if userFetch.Type != models.Manager {
-			models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Only managers can create and change properties"), struct{}{})
+			models.NewResponse(c, http.StatusUnauthorized, fmt.Errorf("Only managers have access to this resource"), struct{}{})
 			return nil, "", false
 		}
 	}
@@ -166,13 +165,12 @@ func ValidateProperty(c *gin.Context,
 		return nil, nil, nil, false
 	}
 
-	// we can omit user ID for
+	// we can omit user ID for some request that don't need it
 	if !checkUserID {
 		delete(errorResponse, "userid")
 	}
 	if len(errorResponse) > 0 {
-		_, ok := errorResponse["userid"]
-		if !ok && operation != "List" {
+		if operation != "List" {
 			models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("You provided invalid %s property details", operation), errorResponse)
 			return nil, nil, nil, false
 		}
@@ -180,10 +178,7 @@ func ValidateProperty(c *gin.Context,
 
 	propertyM, _ := models.FetchDocByCriterion("id", data.GetPropertyID(), models.PropertyCollectionName)
 	if propertyM == nil {
-		_, ok := errorResponse["PropertyID"]
-		if !ok {
-			errorResponse["propertyid"] = []string{"Property id doesn't match  any property"}
-		}
+		errorResponse["propertyid"] = []string{"Property id doesn't match  any property"}
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Property not found"), errorResponse)
 		return nil, nil, nil, false
 	}
@@ -192,35 +187,31 @@ func ValidateProperty(c *gin.Context,
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return nil, nil, nil, false
 	}
-
+	if !checkUserID {
+		return property, nil, user, true
+	}
 	userM, err := models.FetchDocByCriterion("id", data.GetUserID(), models.UserCollectionName)
-
-	if userM == nil && checkUserID {
+	if userM == nil {
 		errorResponse["userid"] = []string{"User id doesn't match  any user"}
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("The User to %s not found", operation), errorResponse)
 		return nil, nil, nil, false
-	}
-	if !checkUserID {
-		return property, nil, user, true
 	}
 	userFetch, err := models.ToUserFromM(userM)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, nil)
 		return nil, nil, nil, false
 	}
-
-	if checkUserID && userFetch.Type != typed {
+	if userFetch.Type != typed {
 		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Can't not %s non %s to property using this endpoint", operation, typed), struct{}{})
 		return nil, nil, nil, false
 	}
-
 	return property, userFetch, user, true
 }
 
 //AugmentProperty helper function to change sub data of a property
 func AugmentProperty(c *gin.Context, typed, operation string, f func(map[string]string, string)) {
 	data := models.AugmentProperty{}
-	property, userFetch, _, ok := ValidateProperty(c, &data, true,false, typed, operation)
+	property, userFetch, _, ok := ValidateProperty(c, &data, true, false, typed, operation)
 	if !ok {
 		return
 	}
@@ -260,7 +251,7 @@ func mapKeysToArray(m map[string]string) []string {
 
 func FetchList(c *gin.Context, typed string) {
 	data := models.AugmentProperty{}
-	property, _, _, ok := ValidateProperty(c, &data, false,false, typed, "List")
+	property, _, _, ok := ValidateProperty(c, &data, false, false, typed, "List")
 	if !ok {
 		return
 	}
@@ -303,7 +294,6 @@ func ErrorReponses(c *gin.Context, data interface{}, api string) (string, bool) 
 	if err != nil {
 		return platform, true
 	}
-
 	c.ShouldBindJSON(&data)
 	errorReponse, err := utils.MissingDataResponse(data)
 	if len(errorReponse) > 0 {
@@ -323,10 +313,8 @@ func UploadFileToS3(s *session.Session, file multipart.File, fileHeader *multipa
 		Key:    aws.String(tempFileName),
 		Body:   file,
 	})
-
 	if err != nil {
 		return "", err
 	}
-
 	return "https://properlyng.s3-eu-west-2.amazonaws.com/" + tempFileName, err
 }
