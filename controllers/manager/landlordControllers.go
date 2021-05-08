@@ -44,11 +44,10 @@ func AddLandlordToProperty(c *gin.Context) {
 	userToBeAdded, err := models.GetUser("email", data.Email)
 	if err != nil {
 		if err.Error() != mongo.ErrNoDocuments.Error() {
-			models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email: "), errorResponse)
+			models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Email: "), err)
 			return
 		}
 	}
-
 	property, err := models.GetProperty("id", data.PropertyID)
 	if err != nil {
 		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Property Not found "), errorResponse)
@@ -58,18 +57,16 @@ func AddLandlordToProperty(c *gin.Context) {
 	link := ""
 	if userToBeAdded == nil {
 		//send mail to user to register
-		userToBeAdded = &models.User{Type: models.Landlord}
-		user.Email = data.Email
+		userToBeAdded = &models.User{Type: models.Landlord, Email: data.Email, PhoneNumber: data.Phone}
 		names := strings.Split(data.Name, " ")
 		if len(names) > 1 {
-			user.LastName = names[1]
+			userToBeAdded.LastName = names[1]
 		}
-		user.FirstName = names[0]
+		userToBeAdded.FirstName = names[0]
 		password := utils.GenerateRandom(10)
-		user.Password = utils.SHA256Hash(password)
-		user.PhoneNumber = data.Phone
-		if err := models.Insert(user, models.UserCollectionName); err != nil {
-			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while creating new user"), struct{}{})
+		userToBeAdded.Password = utils.SHA256Hash(password)
+		if err := models.Insert(userToBeAdded, models.UserCollectionName); err != nil {
+			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while creating new user"), err.Error())
 			return
 		}
 		invite := &models.Invite{Type: models.Landlord,
@@ -77,9 +74,8 @@ func AddLandlordToProperty(c *gin.Context) {
 			Name:  data.Name,
 			Phone: data.Phone,
 		}
-
-		if err := models.Insert(invite, models.InvitesCollectionName); err != nil {
-			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something went wrong while creating new user"), struct{}{})
+		if err := models.Upsert(invite, map[string]interface{}{"email": data.Email}, models.InvitesCollectionName); err != nil {
+			models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Something wrong while inviting user"), err.Error())
 			return
 		}
 		body = fmt.Sprintf(`
@@ -99,15 +95,15 @@ func AddLandlordToProperty(c *gin.Context) {
 
 	userToBeAdded, err = models.GetUser("email", data.Email)
 	if err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Fatal error "), struct{}{})
+		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Fatal error "), err.Error())
 		return
 	}
 	if err := utils.SendMail(data.Email, "Invitation From Peoperly", body); err != nil {
-		models.NewResponse(c, http.StatusInternalServerError, err, nil)
+		models.NewResponse(c, http.StatusInternalServerError, fmt.Errorf("Sending Email"), err.Error())
 		return
 	}
 
-	property.Landlords[userToBeAdded.ID] = userToBeAdded.ID
+	property.Landlords[userToBeAdded.ID] = fmt.Sprintf("%s %s", userToBeAdded.FirstName, userToBeAdded.LastName)
 	if err = controllers.UpdateData(property, models.PropertyCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return

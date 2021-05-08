@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"properlyauth/routes"
@@ -60,18 +59,6 @@ func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatalf("Error loading .env file")
-	}
-
-	dir, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Can't get current working directory due to error :%v", err)
-	}
-	os.Setenv("ROOTDIR", dir)
-	if _, err := os.Stat(fmt.Sprintf("%s/public/media", dir)); err != nil {
-		err := os.Mkdir(fmt.Sprintf("%s/public/media", dir), 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
 
 	router := routes.Router()
