@@ -104,6 +104,7 @@ func TestUtils(t *testing.T) {
 	}
 }
 func cleanUpDb() {
+	os.Setenv("CLEAR","")
 	if os.Getenv("CLEAR") == "CLEAR" {
 		client := database.GetMongoDB().GetClient()
 		log.Print(client.Database(database.DbName).Drop(context.TODO()))
