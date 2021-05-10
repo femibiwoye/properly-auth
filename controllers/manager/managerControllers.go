@@ -549,3 +549,34 @@ func UploadAgreementForm(c *gin.Context) {
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("Form Uploaded"), forms)
 
 }
+
+// AddManagerToProperty godoc
+// @Summary endpoint to add a manager to a property. Only manager are capable of adding another mmanger to property
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Param  details body models.AddLandLordProperty true "details"
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /landlord/property/add/ [post]
+// @Security ApiKeyAuth
+func AddManagerToProperty(c *gin.Context) {
+	user, userToBeAdded, property, data, ok := getAddToPropertyDetails(c, models.Manager)
+	if !ok {
+		return
+	}
+	userToBeAdded, ok = sendMailToAddedUser(c, user, userToBeAdded, property, data, models.Manager)
+	if !ok {
+		return
+	}
+	property.Managers[userToBeAdded.ID] = fmt.Sprintf("%s %s", userToBeAdded.FirstName, userToBeAdded.LastName)
+	if err := controllers.UpdateData(property, models.PropertyCollectionName); err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("User added to property"), property)
+
+}

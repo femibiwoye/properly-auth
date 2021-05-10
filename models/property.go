@@ -22,6 +22,7 @@ type Property struct {
 	Landlords map[string]string `json:"landlord"`
 	Tenants   map[string]string `json:"tenants"`
 	Vendors   map[string]string `json:"vendors"`
+	Managers  map[string]string `json:"managers"`
 	CreatedAt int64             `json:"created_at"`
 	CreatedBy string            `json:"created_by"`
 }

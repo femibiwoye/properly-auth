@@ -46,7 +46,7 @@ func newDB() *DB {
 		log.Fatal(err)
 	}
 
-	ctx, cancelFunc := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 
 	if err != nil {

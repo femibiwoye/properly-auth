@@ -89,6 +89,13 @@ func (a *AugmentProperty) GetPropertyID() string {
 	return a.PropertyID
 }
 
+type AddToProperty interface {
+	GetName() string
+	GetPhone() string
+	GetEmail() string
+	GetPropertyID() string
+}
+
 type AddLandLordProperty struct {
 	PropertyID   string
 	Name         string
@@ -102,6 +109,17 @@ func (a *AddLandLordProperty) GetUserID() string {
 }
 func (a *AddLandLordProperty) GetPropertyID() string {
 	return a.PropertyID
+}
+
+func (a *AddLandLordProperty) GetPhone() string {
+	return a.Phone
+}
+
+func (a *AddLandLordProperty) GetName() string {
+	return a.Name
+}
+func (a *AddLandLordProperty) GetEmail() string {
+	return a.Email
 }
 
 type AddTenantProperty struct {
@@ -118,6 +136,16 @@ func (a *AddTenantProperty) GetUserID() string {
 }
 func (a *AddTenantProperty) GetPropertyID() string {
 	return a.PropertyID
+}
+
+func (a *AddTenantProperty) GetPhone() string {
+	return a.Phone
+}
+func (a *AddTenantProperty) GetName() string {
+	return a.Name
+}
+func (a *AddTenantProperty) GetEmail() string {
+	return a.Email
 }
 
 type ListType struct {
