@@ -66,12 +66,12 @@ func Router() *gin.Engine {
 	landlord := v1.Group("/landlord")
 	landlord.POST("/property/add/", managerRoutes.AddLandlordToProperty)
 	landlord.DELETE("/property/remove/", managerRoutes.RemoveLandlordFromProperty)
-	landlord.GET("/property/list/", managerRoutes.ListLandlordFromProperty)
+	landlord.POST("/property/list/", managerRoutes.ListLandlordFromProperty)
 
 	tenant := v1.Group("/tenant")
 	tenant.POST("/property/add/", managerRoutes.AddTenantToProperty)
 	tenant.DELETE("/property/remove/", managerRoutes.RemoveTenantFromProperty)
-	tenant.GET("/property/list/", managerRoutes.ListTenantFromProperty)
+	tenant.POST("/property/list/", managerRoutes.ListTenantFromProperty)
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

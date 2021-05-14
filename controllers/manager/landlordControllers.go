@@ -71,7 +71,7 @@ func RemoveLandlordFromProperty(c *gin.Context) {
 // @Failure 400 {object} models.HTTPRes
 // @Failure 404 {object} models.HTTPRes
 // @Failure 500 {object} models.HTTPRes
-// @Router /landlord/property/list/ [get]
+// @Router /landlord/property/list/ [post]
 // @Security ApiKeyAuth
 func ListLandlordFromProperty(c *gin.Context) {
 	controllers.FetchList(c, models.Landlord)
