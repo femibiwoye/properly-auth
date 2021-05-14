@@ -443,7 +443,6 @@ func ListProperties(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(user.ID)
 	properties, err := models.FetchDocByCriterionMultiple("createdby", models.PropertyCollectionName, []string{user.ID})
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
@@ -578,5 +577,4 @@ func AddManagerToProperty(c *gin.Context) {
 		return
 	}
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("User added to property"), property)
-
 }
