@@ -64,7 +64,7 @@ func testRemoveTenant(t *testing.T, ExpectedCode int) {
 
 func testListTenant(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("GET", "/v1/tenant/property/list/?platform=mobile", nil)
+	req, err := http.NewRequest("POST", "/v1/tenant/property/list/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
@@ -83,6 +83,4 @@ func testListTenant(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
-
-	fmt.Printf("%s %s", responseText, w.Result().Status)
 }
