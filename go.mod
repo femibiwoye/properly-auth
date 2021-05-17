@@ -8,6 +8,8 @@ require (
 	github.com/badoux/checkmail v1.2.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3
+	github.com/googollee/go-socket.io v1.5.0
+	github.com/graarh/golang-socketio v0.0.0-20170510162725-2c44953b9b5f
 	github.com/haibeey/struct2Map v0.0.3
 	github.com/joho/godotenv v1.3.0
 	github.com/mitchellh/mapstructure v1.4.1

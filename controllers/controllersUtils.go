@@ -11,35 +11,17 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/haibeey/struct2Map"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type managerRequestData interface {
 	GetUserID() string
 	GetPropertyID() string
-}
-
-//UpdateUser update a user data in the DB
-func UpdateData(data models.ProperlyDocModel, collectionName string) error {
-	uB, err := bson.Marshal(data)
-	if err != nil {
-		return err
-	}
-	var update bson.M
-	err = bson.Unmarshal(uB, &update)
-	if err != nil {
-		return err
-	}
-	err = models.Update(data, bson.M{"$set": update}, collectionName)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 //HandleMediaUploads helper function to upload media files
@@ -234,7 +216,7 @@ func AugmentProperty(c *gin.Context, typed, operation string, f func(map[string]
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
-	if err = UpdateData(property, models.PropertyCollectionName); err != nil {
+	if err = models.UpdateData(property, models.PropertyCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
@@ -317,4 +299,39 @@ func UploadFileToS3(s *session.Session, file multipart.File, fileHeader *multipa
 		return "", err
 	}
 	return "https://properlyng.s3-eu-west-2.amazonaws.com/" + tempFileName, err
+}
+
+type NamedID struct {
+	Name string  `json:"name"`
+	ID   string	`json:"id"`
+}
+
+func ConvertPropertyList(p *models.Property) (map[string]interface{}, error) {
+	value, err := struct2map.Struct2Map(p)
+	if err != nil {
+		return nil, err
+	}
+	landlord := []NamedID{}
+	tenants := []NamedID{}
+	vendors := []NamedID{}
+	managers := []NamedID{}
+	for id, name := range p.Landlords {
+		landlord = append(landlord, NamedID{name, id})
+	}
+	for id, name := range p.Managers {
+		managers = append(managers, NamedID{name, id})
+	}
+	for id, name := range p.Vendors {
+		vendors = append(vendors, NamedID{name, id})
+	}
+	for id, name := range p.Tenants {
+		tenants = append(tenants, NamedID{name, id})
+	}
+	value["landlord"] = landlord
+	value["tenants"] = tenants
+	value["vendors"] = vendors
+	value["managers"] = managers
+
+	return value, nil
+
 }

@@ -28,7 +28,6 @@ func handleInterupt() {
 }
 
 func TestProperly(t *testing.T) {
-
 	os.Setenv("HOST", "127.0.0.1:8080")
 	os.Setenv("TESTING", "TESTING")
 	os.Setenv("DBNAME", "properlytesting")
@@ -50,9 +49,12 @@ func TestProperly(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	if true {
+		cleanUpDb()
+	}
 	handleInterupt()
 	router.Static("/public", "public")
-	defer cleanUpDb()
+	//defer cleanUpDb()
 	testSignUp(t, http.StatusCreated, "password", "abrahamakerele38@gmail.com", models.Manager)
 	testSignUp(t, http.StatusCreated, "password", "abraham38@gmail.com", models.Landlord)
 	testSignUp(t, http.StatusCreated, "password", "abrahamak38@gmail.com", models.Tenant)
@@ -90,6 +92,7 @@ func TestProperly(t *testing.T) {
 	testListProperty(t, http.StatusOK)
 	testListInspection(t, http.StatusOK)
 	testUploadForm(t, http.StatusOK)
+	testChat(t)
 }
 
 func TestUtils(t *testing.T) {
@@ -104,7 +107,7 @@ func TestUtils(t *testing.T) {
 	}
 }
 func cleanUpDb() {
-	os.Setenv("CLEAR","")
+	os.Setenv("CLEAR", "CLEAR")
 	if os.Getenv("CLEAR") == "CLEAR" {
 		client := database.GetMongoDB().GetClient()
 		log.Print(client.Database(database.DbName).Drop(context.TODO()))

@@ -116,7 +116,7 @@ func UpdateComplaints(c *gin.Context) {
 		return
 	}
 
-	if err := controllers.UpdateData(complaints, models.ComplaintsCollectionName); err != nil {
+	if err := models.UpdateData(complaints, models.ComplaintsCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
@@ -165,4 +165,34 @@ func ListComplaints(c *gin.Context) {
 
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of complaints no this property"), complaints)
 
+}
+
+// SaveFiles godoc
+// @Summary endpoint to upload albritary files
+// @Description
+// @Accept  multipart/form-data
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /v1/save/file/ [post]
+// @Security ApiKeyAuth
+func SaveFiles(c *gin.Context) {
+	_, err := utils.DecodeJWT(c)
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, err, struct{}{})
+		return
+	}
+	form, err := c.MultipartForm()
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, err, struct{}{})
+		return
+	}
+	files, err := controllers.HandleMediaUploads(c, "files", []string{}, form)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("Files uploaded"), files)
 }

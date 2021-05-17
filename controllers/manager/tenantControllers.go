@@ -33,7 +33,7 @@ func AddTenantToProperty(c *gin.Context) {
 		return
 	}
 	property.Tenants[userToBeAdded.ID] = fmt.Sprintf("%s %s", userToBeAdded.FirstName, userToBeAdded.LastName)
-	if err := controllers.UpdateData(property, models.PropertyCollectionName); err != nil {
+	if err := models.UpdateData(property, models.PropertyCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
