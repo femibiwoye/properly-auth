@@ -176,7 +176,7 @@ func UpdatePropertyRoute(c *gin.Context) {
 		property.Documents = documents
 	}
 
-	err = controllers.UpdateData(property, models.PropertyCollectionName)
+	err = models.UpdateData(property, models.PropertyCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, property)
 		return
@@ -260,7 +260,7 @@ func RemoveAttachment(c *gin.Context) {
 		return
 	}
 
-	err = controllers.UpdateData(property, models.PropertyCollectionName)
+	err = models.UpdateData(property, models.PropertyCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, property)
 		return
@@ -375,7 +375,7 @@ func UpdateInspection(c *gin.Context) {
 		return
 	}
 
-	if err := controllers.UpdateData(inspection, models.InspectionCollectionaName); err != nil {
+	if err := models.UpdateData(inspection, models.InspectionCollectionaName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
@@ -449,7 +449,20 @@ func ListProperties(c *gin.Context) {
 		return
 	}
 
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of  properties"), properties)
+	values := []interface{}{}
+	for _, pm := range properties {
+
+		p, err := models.ToPropertyFromM(pm)
+		if err != nil {
+			continue
+		}
+		v, err := controllers.ConvertPropertyList(p)
+		if err != nil {
+			continue
+		}
+		values = append(values, v)
+	}
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of  properties"), values)
 
 }
 
@@ -539,7 +552,7 @@ func UploadAgreementForm(c *gin.Context) {
 	}
 
 	property.Forms = append(property.Forms, forms...)
-	err = controllers.UpdateData(property, models.PropertyCollectionName)
+	err = models.UpdateData(property, models.PropertyCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, property)
 		return
@@ -572,7 +585,7 @@ func AddManagerToProperty(c *gin.Context) {
 		return
 	}
 	property.Managers[userToBeAdded.ID] = fmt.Sprintf("%s %s", userToBeAdded.FirstName, userToBeAdded.LastName)
-	if err := controllers.UpdateData(property, models.PropertyCollectionName); err != nil {
+	if err := models.UpdateData(property, models.PropertyCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}

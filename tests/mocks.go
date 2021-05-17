@@ -5,13 +5,13 @@ import (
 )
 
 var (
-	router       = routes.Router()
-	tokens       = []string{}
-	propertyID   = []string{}
-	documents    = []string{}
-	images       = []string{}
-	inspectionID = []string{}
-	complaitsID  = []string{}
+	router, chatServer = routes.Router()
+	tokens             = []string{}
+	propertyID         = []string{}
+	documents          = []string{}
+	images             = []string{}
+	inspectionID       = []string{}
+	complaitsID        = []string{}
 )
 
 type mockReadCloser struct {

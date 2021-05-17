@@ -2,11 +2,14 @@ package routes
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"os"
 	"properlyauth/controllers"
+	"properlyauth/controllers/chats"
 	genaralRoutes "properlyauth/controllers/general"
 	managerRoutes "properlyauth/controllers/manager"
+
+	"github.com/gin-gonic/gin"
+	socketio "github.com/googollee/go-socket.io"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -27,16 +30,21 @@ func ServeFile(c *gin.Context) {
 }
 
 //Router instanciate all routes in the application
-func Router() *gin.Engine {
+func Router() (*gin.Engine, *socketio.Server) {
+	chatServer := chats.CreateChatServer()
+
+	go chatServer.Serve()
 
 	app := gin.Default()
+	app.GET("/socket.io/*any", gin.WrapH(chatServer))
+	app.POST("/socket.io/*any", gin.WrapH(chatServer))
 
 	v1 := app.Group("/v1")
-
 	v1.GET("/", func(c *gin.Context) {
 		c.String(200, "Welcome to properly")
 	})
 	v1.GET("/serve/media/:filename", ServeFile)
+	v1.POST("/save/file/", genaralRoutes.SaveFiles)
 
 	v1.POST("/signup/", controllers.SignUp)
 	v1.PUT("/reset/update-password/", controllers.ResetPassword)
@@ -75,5 +83,5 @@ func Router() *gin.Engine {
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	return app
+	return app, chatServer
 }

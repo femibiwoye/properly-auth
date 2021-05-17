@@ -34,7 +34,7 @@ func AddLandlordToProperty(c *gin.Context) {
 	}
 	utils.PrintSomeThing(property, userToBeAdded)
 	property.Landlords[userToBeAdded.ID] = fmt.Sprintf("%s %s", userToBeAdded.FirstName, userToBeAdded.LastName)
-	if err := controllers.UpdateData(property, models.PropertyCollectionName); err != nil {
+	if err := models.UpdateData(property, models.PropertyCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}

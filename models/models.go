@@ -124,3 +124,20 @@ func FetchDocByCriterionMultiple(criteria, collectionName string, values []strin
 	}
 	return docs, nil
 }
+
+func UpdateData(data ProperlyDocModel, collectionName string) error {
+	uB, err := bson.Marshal(data)
+	if err != nil {
+		return err
+	}
+	var update bson.M
+	err = bson.Unmarshal(uB, &update)
+	if err != nil {
+		return err
+	}
+	err = Update(data, bson.M{"$set": update}, collectionName)
+	if err != nil {
+		return err
+	}
+	return nil
+}

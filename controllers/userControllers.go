@@ -202,7 +202,7 @@ func ChangePasswordAuth(c *gin.Context) {
 
 	userFetch.Password = utils.SHA256Hash(data.Password)
 
-	err = UpdateData(userFetch, models.UserCollectionName)
+	err = models.UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
@@ -264,7 +264,7 @@ func ChangePasswordFromToken(c *gin.Context) {
 		return
 	}
 	userFetch.Password = utils.SHA256Hash(password)
-	err = UpdateData(userFetch, models.UserCollectionName)
+	err = models.UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
@@ -440,7 +440,7 @@ func UpdateProfile(c *gin.Context) {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
 	}
-	err = UpdateData(userFetch, models.UserCollectionName)
+	err = models.UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
@@ -513,7 +513,7 @@ func UpdateProfileImage(c *gin.Context) {
 	}
 	userFetch.ProfileImageURL = filename
 
-	err = UpdateData(userFetch, models.UserCollectionName)
+	err = models.UpdateData(userFetch, models.UserCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return

@@ -61,7 +61,8 @@ func main() {
 		log.Fatalf("Error loading .env file")
 	}
 
-	router := routes.Router()
+	router, chatServer := routes.Router()
+	defer chatServer.Close()
 
 	docs.SwaggerInfo.Title = "Properly Swagger Docs"
 	docs.SwaggerInfo.Description = "This is a  Properly  API."
