@@ -42,7 +42,7 @@ func testAddComplaints(t *testing.T, ExpectedCode int) {
 
 func testListComplaints(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
-	req, err := http.NewRequest("GET", "/v1/list/complaints/?platform=mobile", nil)
+	req, err := http.NewRequest("POST", "/v1/list/complaints/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
 
