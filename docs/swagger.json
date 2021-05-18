@@ -34,10 +34,10 @@
                 "tags": [
                     "accounts"
                 ],
-                "summary": "endpoint to add a landloard to a property. Only manager are capable of adding landlord property",
+                "summary": "endpoint to add a manager to a property. Only manager are capable of adding another mmanger to property",
                 "parameters": [
                     {
-                        "description": "useraccountdetails",
+                        "description": "details",
                         "name": "details",
                         "in": "body",
                         "required": true,
@@ -75,7 +75,7 @@
             }
         },
         "/landlord/property/list/": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -1022,7 +1022,7 @@
             }
         },
         "/tenant/property/list/": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -1448,6 +1448,216 @@
                 }
             }
         },
+        "/v1/list/chats/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "list chat between users",
+                "parameters": [
+                    {
+                        "description": "requestdetails",
+                        "name": "details",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ListChatRequestModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/list/complaint-reply/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "endpoint to list all the reply to complaints made on a property",
+                "parameters": [
+                    {
+                        "description": "requestdetails",
+                        "name": "details",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ListComplaintsReply"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/make/complaints/reply/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "endpoint used to add a reply to a complaint",
+                "parameters": [
+                    {
+                        "description": "requestdetails",
+                        "name": "details",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ComplaintsReplyModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/save/file/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "endpoint to upload albritary files",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.HTTPRes"
+                        }
+                    }
+                }
+            }
+        },
         "/vendor/property/add/": {
             "put": {
                 "security": [
@@ -1655,6 +1865,20 @@
                 }
             }
         },
+        "models.ComplaintsReplyModel": {
+            "type": "object",
+            "properties": {
+                "complaintID": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateProperty": {
             "type": "object",
             "properties": {
@@ -1702,6 +1926,22 @@
                     "type": "string"
                 },
                 "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ListChatRequestModel": {
+            "type": "object",
+            "properties": {
+                "otherUserId": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ListComplaintsReply": {
+            "type": "object",
+            "properties": {
+                "complaintID": {
                     "type": "string"
                 }
             }

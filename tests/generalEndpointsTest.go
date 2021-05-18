@@ -112,7 +112,6 @@ func testAddComplaintsReply(t *testing.T, ExpectedCode int) {
 	}
 }
 
-
 func testListComplaintReplys(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("POST", "/v1/list/complaint-reply/?platform=mobile", nil)

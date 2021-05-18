@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -333,5 +334,15 @@ func ConvertPropertyList(p *models.Property) (map[string]interface{}, error) {
 	value["managers"] = managers
 
 	return value, nil
+}
 
+func SendNotification(text, forUser string) {
+	notification := models.Notification{
+		Text:       text,
+		ReceivedBy: forUser,
+	}
+	log.Println(
+		fmt.Sprintf("Inserting notification %s", notification.Text),
+		models.Insert(&notification, models.NotificationCollectionName),
+	)
 }
