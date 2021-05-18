@@ -302,8 +302,8 @@ func UploadFileToS3(s *session.Session, file multipart.File, fileHeader *multipa
 }
 
 type NamedID struct {
-	Name string  `json:"name"`
-	ID   string	`json:"id"`
+	Name string `json:"name"`
+	ID   string `json:"id"`
 }
 
 func ConvertPropertyList(p *models.Property) (map[string]interface{}, error) {

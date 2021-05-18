@@ -164,7 +164,6 @@ func ListComplaints(c *gin.Context) {
 	}
 
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of complaints no this property"), complaints)
-
 }
 
 // SaveFiles godoc
@@ -195,4 +194,96 @@ func SaveFiles(c *gin.Context) {
 		return
 	}
 	models.NewResponse(c, http.StatusOK, fmt.Errorf("Files uploaded"), files)
+}
+
+// MakeComplaintsReply godoc
+// @Summary endpoint used to add a reply to a complaint
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Param  details body models.ComplaintsReplyModel true "requestdetails"
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /v1/make/complaints/reply/ [post]
+// @Security ApiKeyAuth
+func MakeComplaintsReply(c *gin.Context) {
+	res, err := utils.DecodeJWT(c)
+	if err != nil {
+		models.NewResponse(c, http.StatusUnauthorized, err, struct{}{})
+		return
+	}
+
+	data := models.ComplaintsReplyModel{}
+	c.ShouldBindJSON(&data)
+	errorResponse, err := utils.MissingDataResponse(data)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+	if len(errorResponse) > 0 {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("You provided invalid fetch details"), errorResponse)
+		return
+	}
+	_, err = models.GetComplaints("id", data.ComplaintID)
+	if err != nil {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Invalid complaint"), err.Error())
+	}
+
+	complaintsReply := models.ComplaintsReply{}
+	complaintsReply.CreatedAt = time.Now().Unix()
+	complaintsReply.Text = data.Text
+	complaintsReply.ComplaintId = data.ComplaintID
+	complaintsReply.CreatedBy = res["user_id"]
+
+	if err := models.Insert(&complaintsReply, models.ComplaintsReplyCollectionName); err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
+	models.NewResponse(c, http.StatusCreated, fmt.Errorf("New reply to complaint have been added "), complaintsReply)
+}
+
+// ListComplaintsReply godoc
+// @Summary endpoint to list all the reply to complaints made on a property
+// @Description
+// @Tags accounts
+// @Accept  json
+// @Param  details body models.ListComplaintsReply true "requestdetails"
+// @Produce  json
+// @Success 200 {object} models.HTTPRes
+// @Failure 400 {object} models.HTTPRes
+// @Failure 404 {object} models.HTTPRes
+// @Failure 500 {object} models.HTTPRes
+// @Router /v1/list/complaint-reply/ [post]
+// @Security ApiKeyAuth
+func ListComplaintsReply(c *gin.Context) {
+	data := models.ListComplaintsReply{}
+	_, _, ok := controllers.CheckUser(c, true)
+	if !ok {
+		return
+	}
+
+	c.ShouldBindJSON(&data)
+
+	errorResponse, err := utils.MissingDataResponse(data)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
+
+	if len(errorResponse) > 0 {
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("You provided invalid fetch details"), errorResponse)
+		return
+	}
+
+	complaints, err := models.FetchDocByCriterionMultiple("complaintid", models.ComplaintsReplyCollectionName, []string{data.ComplaintID})
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of reply to complaints "), complaints)
 }
