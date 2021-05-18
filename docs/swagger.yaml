@@ -60,6 +60,15 @@ definitions:
       text:
         type: string
     type: object
+  models.ComplaintsReplyModel:
+    properties:
+      complaintID:
+        type: string
+      date:
+        type: integer
+      text:
+        type: string
+    type: object
   models.CreateProperty:
     properties:
       address:
@@ -91,6 +100,16 @@ definitions:
       propertyID:
         type: string
       text:
+        type: string
+    type: object
+  models.ListChatRequestModel:
+    properties:
+      otherUserId:
+        type: string
+    type: object
+  models.ListComplaintsReply:
+    properties:
+      complaintID:
         type: string
     type: object
   models.ListType:
@@ -195,7 +214,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: useraccountdetails
+      - description: details
         in: body
         name: details
         required: true
@@ -222,12 +241,12 @@ paths:
             $ref: '#/definitions/models.HTTPRes'
       security:
       - ApiKeyAuth: []
-      summary: endpoint to add a landloard to a property. Only manager are capable
-        of adding landlord property
+      summary: endpoint to add a manager to a property. Only manager are capable of
+        adding another mmanger to property
       tags:
       - accounts
   /landlord/property/list/:
-    get:
+    post:
       consumes:
       - application/json
       parameters:
@@ -826,7 +845,7 @@ paths:
       tags:
       - accounts
   /tenant/property/list/:
-    get:
+    post:
       consumes:
       - application/json
       parameters:
@@ -1094,6 +1113,137 @@ paths:
       summary: endpoint to update user profile
       tags:
       - accounts
+  /v1/list/chats/:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: requestdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.ListChatRequestModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: list chat between users
+      tags:
+      - accounts
+  /v1/list/complaint-reply/:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: requestdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.ListComplaintsReply'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to list all the reply to complaints made on a property
+      tags:
+      - accounts
+  /v1/make/complaints/reply/:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: requestdetails
+        in: body
+        name: details
+        required: true
+        schema:
+          $ref: '#/definitions/models.ComplaintsReplyModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint used to add a reply to a complaint
+      tags:
+      - accounts
+  /v1/save/file/:
+    post:
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.HTTPRes'
+      security:
+      - ApiKeyAuth: []
+      summary: endpoint to upload albritary files
   /vendor/property/add/:
     put:
       consumes:

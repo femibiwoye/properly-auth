@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
+	"net/http/httptest"
 	"properlyauth/controllers/chats"
 	"properlyauth/routes"
 	"properlyauth/utils"
@@ -65,25 +67,28 @@ func sendMessages(t *testing.T, to, token string) {
 
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		c.Join(h.Id())
-		log.Println("Connected")
+		log.Println("Connected", h.Id())
+		time.Sleep(500 * time.Millisecond)
+		for _, msg := range []string{
+			randomStringMessage(5),
+			randomStringMessage(5),
+			randomStringMessage(5),
+			randomStringMessage(5),
+		} {
+
+			lc := chats.LiveChat{To: h.Id(), Token: token}
+			lc.CreatedAt = time.Now().Unix()
+			lc.Text = msg
+			buf, err := json.Marshal(lc)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
+			command := string(buf)
+			c.Emit("message", command)
+		}
 	})
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	for _, msg := range []string{
-		randomStringMessage(5),
-	} {
-
-		lc := chats.LiveChat{To: to, Token: token}
-		lc.CreatedAt = time.Now().Unix()
-		lc.Text = msg
-		buf, err := json.Marshal(lc)
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
-		command := string(buf)
-		c.Emit("message", command)
 	}
 
 }
@@ -91,7 +96,34 @@ func sendMessages(t *testing.T, to, token string) {
 func randomStringMessage(size int) string {
 	buf := make([]byte, size)
 	for i := 0; i < size; i++ {
-		buf[i] = byte(rand.Int() % 255)
+		buf[i] = byte((rand.Int() % 26) + 64)
 	}
 	return fmt.Sprintf("%s", buf)
+}
+
+func testListChat(t *testing.T, ExpectedCode int) {
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("POST", "/v1/list/chats/?platform=mobile", nil)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
+	user2Res, err := utils.DecodeJWTToken(tokens[1])
+	if err != nil {
+		t.Fatal(user2Res, err)
+	}
+	data := make(map[string]interface{})
+	data["OtherUserId"] = user2Res["user_id"]
+
+	dataByte, _ := json.Marshal(data)
+	mrc := mockReadCloser{data: dataByte}
+	req.Body = mrc
+	if err != nil {
+		t.Fatalf("%v occured", err)
+	}
+	router.ServeHTTP(w, req)
+	responseText, err := ioutil.ReadAll(w.Body)
+	if w.Code != ExpectedCode {
+		fmt.Printf("%s %s", responseText, w.Result().Status)
+		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
+	}
+	fmt.Println(string(responseText))
 }

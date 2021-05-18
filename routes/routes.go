@@ -52,6 +52,7 @@ func Router() (*gin.Engine, *socketio.Server) {
 	v1.POST("/reset/validate-token/", controllers.ChangePasswordFromToken)
 	v1.POST("/login/", controllers.SignIn)
 	v1.GET("/user/", controllers.UserProfile)
+	v1.POST("/list/chats/", chats.ListChatsBetween)
 
 	v1.PUT("/user/update/", controllers.UpdateProfile)
 	v1.PUT("/user/update-profile-image/", controllers.UpdateProfileImage)

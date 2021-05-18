@@ -12,12 +12,11 @@ const (
 
 //Complaints decribes a complaints  on properly
 type Chats struct {
-	ID         string   `json:"id"`
-	CreatedAt  int64    `json:"created_at"`
-	Text       string   `json:"text"`
-	SentBy     string   `json:"sentby"`
-	ReceivedBy string   `json:"receiveby"`
-	Medias     []string `json:"medias"`
+	ID        string   `json:"id"`
+	CreatedAt int64    `json:"created_at"`
+	Text      string   `json:"text"`
+	SentBy    string   `json:"sentby"`
+	Medias    []string `json:"medias"`
 }
 
 func (c *Chats) getID() string {
@@ -94,9 +93,13 @@ func ToChatSessionFromM(mongoM bson.M) (*ChatSession, error) {
 }
 
 func GetChatSession(criteria, value string) (*ChatSession, error) {
-	m, err := FetchDocByCriterion(criteria, value, ChatCollectionName)
+	m, err := FetchDocByCriterion(criteria, value, ChatSessionCollectionName)
 	if err != nil {
 		return nil, err
 	}
 	return ToChatSessionFromM(m)
+}
+
+type ListChatRequestModel struct {
+	OtherUserId string
 }
