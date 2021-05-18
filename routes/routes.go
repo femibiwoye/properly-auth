@@ -59,6 +59,8 @@ func Router() (*gin.Engine, *socketio.Server) {
 	v1.POST("/make/complaint/", genaralRoutes.MakeComplaints)
 	v1.PUT("/update/complaint/", genaralRoutes.UpdateComplaints)
 	v1.GET("/list/complaints/", genaralRoutes.ListComplaints)
+	v1.POST("/make/complaints/reply/", genaralRoutes.MakeComplaintsReply)
+	v1.POST("/list/complaint-reply/", genaralRoutes.ListComplaintsReply)
 
 	manager := v1.Group("/manager")
 	manager.PUT("/create/property/", managerRoutes.CreateProperty)

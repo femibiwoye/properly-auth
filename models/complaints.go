@@ -6,7 +6,8 @@ import (
 
 const (
 	//ComplaintsCollectionName holds the collection on mongodb where Complaints are being stored
-	ComplaintsCollectionName = "Complaints"
+	ComplaintsCollectionName      = "Complaints"
+	ComplaintsReplyCollectionName = "ComplaintsReply"
 )
 
 const (
@@ -76,10 +77,66 @@ func (cm *ComplaintsModel) GetPropertyID() string {
 	return cm.PropertyID
 }
 
+type ComplaintsReplyModel struct {
+	ComplaintID string
+	Text        string
+	Date        int64
+}
+
 type UpdateComplaintsModel struct {
 	PropertyID   string
 	ComplaintsID string
 	Text         string
 	Date         int64
 	Status       string
+}
+
+//ComplaintsReply decribes a reply  on complaint
+type ComplaintsReply struct {
+	ID          string `json:"id"`
+	CreatedAt   int64  `json:"created_at"`
+	Text        string `json:"text"`
+	CreatedBy   string `json:"created_by"`
+	ComplaintId string `json:"complaintid"`
+}
+
+func (cr *ComplaintsReply) getID() string {
+	return cr.ID
+}
+
+func (cr *ComplaintsReply) setID(id string) {
+	cr.ID = id
+}
+
+func (cr *ComplaintsReply) getCreatedAt() int64 {
+	return cr.CreatedAt
+}
+
+func (cr *ComplaintsReply) setCreatedAt(at int64) {
+	cr.CreatedAt = at
+}
+
+func ToComplaintsReplyFromM(mongoM bson.M) (*ComplaintsReply, error) {
+	uB, err := bson.Marshal(mongoM)
+	if err != nil {
+		return nil, err
+	}
+	i := &ComplaintsReply{}
+	err = bson.Unmarshal(uB, i)
+	if err != nil {
+		return nil, err
+	}
+	return i, nil
+}
+
+func GetComplaintsReply(criteria, value string) (*ComplaintsReply, error) {
+	m, err := FetchDocByCriterion(criteria, value, ComplaintsReplyCollectionName)
+	if err != nil {
+		return nil, err
+	}
+	return ToComplaintsReplyFromM(m)
+}
+
+type ListComplaintsReply struct {
+	ComplaintID string
 }

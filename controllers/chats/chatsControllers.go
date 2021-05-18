@@ -30,6 +30,7 @@ func CreateChatServer() *socketio.Server {
 	server := socketio.NewServer(nil)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
+		utils.PrintSomeThing(s.URL().RawQuery)
 		server.JoinRoom("/", s.ID(), s)
 		err := models.Insert(
 			&models.ChatSession{SessionID: s.ID(), CreatedAt: time.Now().Unix()},
@@ -39,19 +40,15 @@ func CreateChatServer() *socketio.Server {
 	})
 
 	server.OnEvent("/", "message", func(s socketio.Conn, msg string) string {
-
 		lc := LiveChat{}
 		if err := json.Unmarshal([]byte(msg), &lc); err == nil {
-			log.Println("we go here?")
 			res, err := utils.DecodeJWTToken(lc.Token)
-			log.Println("we go here?2", res, err)
 			if err != nil {
 				sendNotification("Couldn't parse token")
 				return msg
 			}
 
 			chatSessionUser2, err := models.GetChatSession("sessionid", lc.To)
-			log.Println("we go here?3", err)
 			if err != nil {
 				//send an error message or Something
 				sendNotification("Error fetching user chat session")

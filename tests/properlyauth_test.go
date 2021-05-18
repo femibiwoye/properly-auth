@@ -54,7 +54,7 @@ func TestProperly(t *testing.T) {
 	}
 	handleInterupt()
 	router.Static("/public", "public")
-	//defer cleanUpDb()
+	defer cleanUpDb()
 	testSignUp(t, http.StatusCreated, "password", "abrahamakerele38@gmail.com", models.Manager)
 	testSignUp(t, http.StatusCreated, "password", "abraham38@gmail.com", models.Landlord)
 	testSignUp(t, http.StatusCreated, "password", "abrahamak38@gmail.com", models.Tenant)
@@ -92,7 +92,9 @@ func TestProperly(t *testing.T) {
 	testListProperty(t, http.StatusOK)
 	testListInspection(t, http.StatusOK)
 	testUploadForm(t, http.StatusOK)
-	testChat(t)
+	testAddComplaintsReply(t, http.StatusCreated)
+	testListComplaintReplys(t,http.StatusOK)
+	//testChat(t)
 }
 
 func TestUtils(t *testing.T) {
