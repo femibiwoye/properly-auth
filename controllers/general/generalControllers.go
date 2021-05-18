@@ -30,6 +30,10 @@ import (
 func MakeComplaints(c *gin.Context) {
 	data := models.ComplaintsModel{}
 	_, _, user, ok := controllers.ValidateProperty(c, &data, false, false, "make", "Complaints")
+	if user.Type == models.Manager{
+		models.NewResponse(c, http.StatusBadRequest, fmt.Errorf("Manager can't make compalints"), struct{}{})
+		return
+	}
 	if !ok {
 		return
 	}

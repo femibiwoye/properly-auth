@@ -14,7 +14,7 @@ func testAddComplaints(t *testing.T, ExpectedCode int) {
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("POST", "/v1/make/complaint/?platform=mobile", nil)
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[0]))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokens[2]))
 
 	data := make(map[string]interface{})
 	data["propertyid"] = propertyID[0]
