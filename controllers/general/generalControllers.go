@@ -2,14 +2,17 @@ package general
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"properlyauth/controllers"
 	"properlyauth/models"
+	"strings"
 	"time"
 
-	struct2map "github.com/haibeey/struct2Map"
+	"github.com/gin-gonic/gin"
+
 	"properlyauth/utils"
+
+	struct2map "github.com/haibeey/struct2Map"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -44,6 +47,9 @@ func MakeComplaints(c *gin.Context) {
 	complaints.PropertyId = data.PropertyID
 	complaints.CreatedBy = user.ID
 	complaints.Status = models.Pending
+	complaints.Name = fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+	utils.PrintSomeThing(user.ProfileImageURL, "na wa p")
+	complaints.UserProfileImage = user.ProfileImageURL
 
 	if err := models.Insert(&complaints, models.ComplaintsCollectionName); err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
@@ -82,12 +88,7 @@ func UpdateComplaints(c *gin.Context) {
 		return
 	}
 
-	complaintsM, err := models.FetchDocByCriterion("id", data.ComplaintsID, models.ComplaintsCollectionName)
-	if complaintsM == nil {
-		models.NewResponse(c, http.StatusNotFound, fmt.Errorf("Complaints not found"), "Invalid Complaints ID")
-		return
-	}
-	complaints, err := models.ToComplaintsFromM(complaintsM)
+	complaints, err := models.GetComplaints("id", data.ComplaintsID)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
@@ -98,11 +99,15 @@ func UpdateComplaints(c *gin.Context) {
 		models.NewResponse(c, http.StatusInternalServerError, err, false)
 		return
 	}
+	mapToUpdate, err := struct2map.Struct2Map(complaints)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, false)
+		return
+	}
 
-	mapToUpdate := make(map[string]interface{})
 	response := make(map[string]interface{})
 	for key, value := range v {
-		_, ok := errorResponse[key]
+		_, ok := errorResponse[strings.ToLower(key)]
 		if !ok {
 			mapToUpdate[key] = value
 			response[key] = []string{fmt.Sprintf("%s has been updated to %s", key, value)}

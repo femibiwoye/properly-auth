@@ -18,12 +18,14 @@ const (
 
 //Complaints decribes a complaints  on properly
 type Complaints struct {
-	ID         string `json:"id"`
-	CreatedAt  int64  `json:"created_at"`
-	Text       string `json:"text"`
-	CreatedBy  string `json:"created_by"`
-	PropertyId string `json:"property_id"`
-	Status     string `json:"status"`
+	ID               string `json:"id"`
+	CreatedAt        int64  `json:"created_at"`
+	Text             string `json:"text"`
+	CreatedBy        string `json:"created_by"`
+	PropertyId       string `json:"property_id"`
+	Status           string `json:"status"`
+	Name             string `json:"name"`
+	UserProfileImage string `json:"userprofileimage"`
 }
 
 func (c *Complaints) getID() string {
