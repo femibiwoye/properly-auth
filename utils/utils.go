@@ -255,3 +255,13 @@ func PrintSomeThing(thing ...interface{}) {
 	fmt.Println(thing...)
 	fmt.Println()
 }
+
+func Min(a, b []string) int {
+	lenA := len(a)
+	lenB := len(b)
+
+	if lenA < lenB {
+		return lenA
+	}
+	return lenB
+}

@@ -2,11 +2,11 @@ package models
 
 import (
 	"context"
-	"properlyauth/database"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"properlyauth/database"
+	"properlyauth/utils"
 )
 
 type ProperlyDocModel interface {
@@ -113,6 +113,29 @@ func FetchDocByCriterionMultiple(criteria, collectionName string, values []strin
 	defer database.PutDBBack(db)
 	collection := client.Database(database.DbName).Collection(collectionName)
 	filter := bson.M{criteria: bson.M{"$in": values}}
+	docs := []bson.M{}
+	opts := options.Find().SetSort(bson.D{{Key: "CreatedAt", Value: 1}}).SetProjection(bson.M{"password": 0})
+	cursor, err := collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &docs); err != nil {
+		return nil, err
+	}
+	return docs, nil
+}
+
+//FetchDocByCriterionMultipleAnd returns a doc struct that tha matches the particular criteria
+// matches propetyid="beabebeabdebaebdbe" and status="pending"
+func FetchDocByCriterionMultipleAnd(criteria, values []string, collectionName string) ([]bson.M, error) {
+	db := database.GetMongoDB()
+	client := db.GetClient()
+	defer database.PutDBBack(db)
+	collection := client.Database(database.DbName).Collection(collectionName)
+	filter := bson.M{}
+	for i := 0; i < utils.Min(criteria, values); i++ {
+		filter[criteria[i]] = values[i]
+	}
 	docs := []bson.M{}
 	opts := options.Find().SetSort(bson.D{{Key: "CreatedAt", Value: 1}}).SetProjection(bson.M{"password": 0})
 	cursor, err := collection.Find(context.TODO(), filter, opts)

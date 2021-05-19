@@ -49,7 +49,6 @@ func CreateChatServer() *socketio.Server {
 			}
 			chatSessionUser1, err := models.GetChatSession("sessionid", s.ID())
 			if err != nil {
-				log.Println(err.Error(), s.ID())
 				controllers.SendNotification("Error fetching user chat session", chatSessionUser1.UserID)
 				return msg
 			}
@@ -88,7 +87,7 @@ func CreateChatServer() *socketio.Server {
 					controllers.SendNotification("Error sending message", chatSessionUser1.UserID)
 					return
 				}
-				c.Emit(fmt.Sprintf("%s", buf))
+				c.Emit("message", fmt.Sprintf("%s", buf))
 				controllers.SendNotification(lc.Text, chatSessionUser1.UserID)
 			})
 

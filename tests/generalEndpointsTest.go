@@ -62,6 +62,7 @@ func testListComplaints(t *testing.T, ExpectedCode int) {
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
 
+	fmt.Println(string(responseText))
 }
 
 func testUpdateComplaints(t *testing.T, ExpectedCode int) {
