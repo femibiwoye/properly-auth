@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"properlyauth/models"
 	"testing"
 	"time"
 )
@@ -73,6 +74,7 @@ func testUpdateComplaints(t *testing.T, ExpectedCode int) {
 
 	data := make(map[string]interface{})
 	data["ComplaintsID"] = complaitsID[0]
+	data["Status"] = models.Acknowledged
 
 	dataByte, _ := json.Marshal(data)
 	mrc := mockReadCloser{data: dataByte}
@@ -86,6 +88,8 @@ func testUpdateComplaints(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
+
+	fmt.Println(string(responseText))
 }
 
 func testAddComplaintsReply(t *testing.T, ExpectedCode int) {

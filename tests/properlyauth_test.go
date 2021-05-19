@@ -94,7 +94,7 @@ func TestProperly(t *testing.T) {
 	testUploadForm(t, http.StatusOK)
 	testAddComplaintsReply(t, http.StatusCreated)
 	testListComplaintReplys(t, http.StatusOK)
-	testChat(t)
+	//testChat(t)
 	testListChat(t, http.StatusOK)
 }
 
