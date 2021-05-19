@@ -161,13 +161,36 @@ func ListComplaints(c *gin.Context) {
 		return
 	}
 
-	complaints, err := models.FetchDocByCriterionMultiple("propertyid", models.ComplaintsCollectionName, []string{data.PropertyID})
+	response := make(map[string]interface{})
+	complaints, err := models.FetchDocByCriterionMultipleAnd(
+		[]string{"propertyid", "status"},
+		[]string{data.PropertyID, models.Pending},
+		models.ComplaintsCollectionName)
 	if err != nil {
 		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
 		return
 	}
+	response[models.Pending] = complaints
+	complaints, err = models.FetchDocByCriterionMultipleAnd(
+		[]string{"propertyid", "status"},
+		[]string{data.PropertyID, models.Acknowledged},
+		models.ComplaintsCollectionName)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+	response[models.Acknowledged] = complaints
+	complaints, err = models.FetchDocByCriterionMultipleAnd(
+		[]string{"propertyid", "status"},
+		[]string{data.PropertyID, models.Resolved},
+		models.ComplaintsCollectionName)
+	if err != nil {
+		models.NewResponse(c, http.StatusInternalServerError, err, struct{}{})
+		return
+	}
+	response[models.Resolved] = complaints
 
-	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of complaints no this property"), complaints)
+	models.NewResponse(c, http.StatusOK, fmt.Errorf("List of complaints no this property"), response)
 }
 
 // SaveFiles godoc

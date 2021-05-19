@@ -91,6 +91,13 @@ func sendMessages(t *testing.T, to, token string) {
 		t.Fatal(err)
 	}
 
+	err = c.On("message", func(h *gosocketio.Channel) {
+		log.Println("we got a message", h.List(h.Id()))
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 }
 
 func randomStringMessage(size int) string {
@@ -125,5 +132,4 @@ func testListChat(t *testing.T, ExpectedCode int) {
 		fmt.Printf("%s %s", responseText, w.Result().Status)
 		t.Fatalf("Expecting %d Got %d ", ExpectedCode, w.Code)
 	}
-	fmt.Println(string(responseText))
 }
